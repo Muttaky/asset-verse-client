@@ -27,30 +27,58 @@ import PrivateRoute from "./PrivateRoute";
 let router = createBrowserRouter([
   {
     path: "/",
+    loader: () => fetch("http://localhost:3000/users"),
     Component: Root,
     children: [
       {
         index: true,
-        loader: () => fetch("https://krishi-link-server.vercel.app/crops/"),
         Component: Home,
       },
       {
         path: "/login",
-        loader: () => fetch(`https://krishi-link-server.vercel.app/crops/`),
-        Component: Login,
-      },
-      {
-        path: "/login/:id",
-        loader: async ({ params }) =>
-          fetch(`https://krishi-link-server.vercel.app/crops/${params.id}`),
         Component: Login,
       },
       { path: "/hr-reg", Component: HRreg },
-      { path: "/hr-dash", Component: HRdash },
-      { path: "/assets-list", Component: AssetsList },
-      { path: "/add-assets", Component: AddAssets },
-      { path: "/request", Component: Request },
-      { path: "/ep-list", Component: EPList },
+      {
+        path: "/hr-dash",
+        element: (
+          <PrivateRoute>
+            <HRdash></HRdash>
+          </PrivateRoute>
+        ),
+      },
+      {
+        path: "/assets-list",
+        element: (
+          <PrivateRoute>
+            <AssetsList></AssetsList>
+          </PrivateRoute>
+        ),
+      },
+      {
+        path: "/add-assets",
+        element: (
+          <PrivateRoute>
+            <AddAssets></AddAssets>
+          </PrivateRoute>
+        ),
+      },
+      {
+        path: "/request",
+        element: (
+          <PrivateRoute>
+            <Request></Request>
+          </PrivateRoute>
+        ),
+      },
+      {
+        path: "/ep-list",
+        element: (
+          <PrivateRoute>
+            <EPList></EPList>
+          </PrivateRoute>
+        ),
+      },
       {
         path: "/profile",
         element: (
@@ -61,12 +89,54 @@ let router = createBrowserRouter([
       },
 
       { path: "/ep-reg", Component: EPreg },
-      { path: "/ep-dash", Component: EPdash },
-      { path: "/assets", Component: Assets },
-      { path: "/my-assets", Component: MyAssets },
-      { path: "/my-team", Component: MyTeam },
-      { path: "/my-request", Component: MyRequest },
-      { path: "/my-profile", Component: MyProfile },
+      {
+        path: "/ep-dash",
+        element: (
+          <PrivateRoute>
+            <EPdash></EPdash>
+          </PrivateRoute>
+        ),
+      },
+      {
+        path: "/assets",
+        element: (
+          <PrivateRoute>
+            <Assets></Assets>
+          </PrivateRoute>
+        ),
+      },
+      {
+        path: "/my-assets",
+        element: (
+          <PrivateRoute>
+            <MyAssets></MyAssets>
+          </PrivateRoute>
+        ),
+      },
+      {
+        path: "/my-team",
+        element: (
+          <PrivateRoute>
+            <MyTeam></MyTeam>
+          </PrivateRoute>
+        ),
+      },
+      {
+        path: "/my-request",
+        element: (
+          <PrivateRoute>
+            <MyRequest></MyRequest>
+          </PrivateRoute>
+        ),
+      },
+      {
+        path: "/my-profile",
+        element: (
+          <PrivateRoute>
+            <MyProfile></MyProfile>
+          </PrivateRoute>
+        ),
+      },
     ],
   },
 ]);

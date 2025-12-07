@@ -2,8 +2,12 @@ import React from "react";
 import { Link } from "react-router";
 import useAuth from "./useAuth";
 
-const Header = () => {
+const Header = ({ users }) => {
   let { user, logOut } = useAuth();
+  let newUser = users.find((u) => u.email === user?.email);
+
+  let role = newUser?.role || "guest";
+  console.log(newUser, role);
   return (
     <div>
       <div className="navbar bg-base-100 shadow-sm">
@@ -35,12 +39,15 @@ const Header = () => {
               </li>
               {user ? (
                 <>
-                  <li>
-                    <Link to="/hr-dash">HR Dashboard</Link>
-                  </li>
-                  <li>
-                    <Link to="/ep-dash">Employee DashBoard</Link>
-                  </li>
+                  {role === "hr" ? (
+                    <li>
+                      <Link to="/hr-dash">HR Dashboard</Link>
+                    </li>
+                  ) : (
+                    <li>
+                      <Link to="/ep-dash">Employee DashBoard</Link>
+                    </li>
+                  )}
                 </>
               ) : (
                 <>
@@ -61,14 +68,20 @@ const Header = () => {
         </div>
         <div className="navbar-center hidden md:flex">
           <ul className="menu menu-horizontal px-1">
+            <li>
+              <Link to="/">Home</Link>
+            </li>
             {user ? (
               <>
-                <li>
-                  <Link to="/hr-dash">HR Dashboard</Link>
-                </li>
-                <li>
-                  <Link to="/ep-dash">Employee DashBoard</Link>
-                </li>
+                {role === "hr" ? (
+                  <li>
+                    <Link to="/hr-dash">HR Dashboard</Link>
+                  </li>
+                ) : (
+                  <li>
+                    <Link to="/ep-dash">Employee DashBoard</Link>
+                  </li>
+                )}
               </>
             ) : (
               <>
@@ -85,93 +98,101 @@ const Header = () => {
         </div>
         {user ? (
           <>
-            {" "}
-            <div className="ml-50 dropdown dropdown-end">
-              <div
-                tabIndex={0}
-                role="button"
-                className="btn btn-ghost btn-circle avatar"
-              >
-                <div className="w-10 rounded-full">
-                  <img
-                    alt="Tailwind CSS Navbar component"
-                    src="https://img.daisyui.com/images/stock/photo-1534528741775-53994a69daeb.webp"
-                  />
+            {role === "hr" ? (
+              <div className="navbar-end">
+                {" "}
+                <div className="dropdown dropdown-end">
+                  <div
+                    tabIndex={0}
+                    role="button"
+                    className="btn btn-ghost btn-circle avatar"
+                  >
+                    <div className="w-10 rounded-full">
+                      <img
+                        alt="Tailwind CSS Navbar component"
+                        src="https://img.daisyui.com/images/stock/photo-1534528741775-53994a69daeb.webp"
+                      />
+                    </div>
+                  </div>
+                  <ul
+                    tabIndex="-1"
+                    className="menu menu-sm dropdown-content bg-base-100 rounded-box z-1 mt-3 w-52 p-2 shadow"
+                  >
+                    <li>
+                      <Link to="/assets-list">Assets List</Link>
+                    </li>
+
+                    <li>
+                      <Link to="/add-assets">Add Assets</Link>
+                    </li>
+
+                    <li>
+                      <Link to="/request">All Request</Link>
+                    </li>
+
+                    <li>
+                      <Link to="/ep-list">Employee List</Link>
+                    </li>
+
+                    <li>
+                      <Link to="/profile">Profile</Link>
+                    </li>
+                    <li
+                      onClick={() => {
+                        logOut();
+                      }}
+                    >
+                      <a>Logout</a>
+                    </li>
+                  </ul>
                 </div>
               </div>
-              <ul
-                tabIndex="-1"
-                className="menu menu-sm dropdown-content bg-base-100 rounded-box z-1 mt-3 w-52 p-2 shadow"
-              >
-                <li>
-                  <Link to="/assets-list">Assets List</Link>
-                </li>
-
-                <li>
-                  <Link to="/add-assets">Add Assets</Link>
-                </li>
-
-                <li>
-                  <Link to="/request">All Request</Link>
-                </li>
-
-                <li>
-                  <Link to="/ep-list">Employee List</Link>
-                </li>
-
-                <li>
-                  <Link to="/profile">Profile</Link>
-                </li>
-                <li
-                  onClick={() => {
-                    logOut();
-                  }}
-                >
-                  <a>Logout</a>
-                </li>
-              </ul>
-            </div>
-            <div className="ml-50 dropdown dropdown-end">
-              <div
-                tabIndex={0}
-                role="button"
-                className="btn btn-ghost btn-circle avatar"
-              >
-                <div className="w-10 rounded-full">
-                  <img
-                    alt="Tailwind CSS Navbar component"
-                    src="https://img.daisyui.com/images/stock/photo-1534528741775-53994a69daeb.webp"
-                  />
+            ) : (
+              <div className="navbar-end">
+                {" "}
+                <div className=" dropdown dropdown-end">
+                  <div
+                    tabIndex={0}
+                    role="button"
+                    className="btn btn-ghost btn-circle avatar"
+                  >
+                    <div className="w-10 rounded-full">
+                      <img
+                        alt="Tailwind CSS Navbar component"
+                        src="https://img.daisyui.com/images/stock/photo-1534528741775-53994a69daeb.webp"
+                      />
+                    </div>
+                  </div>
+                  <ul
+                    tabIndex="-1"
+                    className="menu menu-sm dropdown-content bg-base-100 rounded-box z-1 mt-3 w-52 p-2 shadow"
+                  >
+                    <li>
+                      <Link to="/assets">Assets</Link>
+                    </li>
+                    <li>
+                      <Link to="/my-assets">My Assets</Link>
+                    </li>
+                    <li>
+                      <Link to="/my-team">My Team</Link>
+                    </li>
+                    <li>
+                      <Link to="/my-request">My Requested Assets</Link>
+                    </li>
+                    <li>
+                      <Link to="/my-profile">My Profile</Link>
+                    </li>
+                    <li
+                      onClick={() => {
+                        logOut();
+                      }}
+                    >
+                      <a>Logout</a>
+                    </li>
+                  </ul>
                 </div>
               </div>
-              <ul
-                tabIndex="-1"
-                className="menu menu-sm dropdown-content bg-base-100 rounded-box z-1 mt-3 w-52 p-2 shadow"
-              >
-                <li>
-                  <Link to="/assets">Assets</Link>
-                </li>
-                <li>
-                  <Link to="/my-assets">My Assets</Link>
-                </li>
-                <li>
-                  <Link to="/my-team">My Team</Link>
-                </li>
-                <li>
-                  <Link to="/my-request">My Requested Assets</Link>
-                </li>
-                <li>
-                  <Link to="/my-profile">My Profile</Link>
-                </li>
-                <li
-                  onClick={() => {
-                    logOut();
-                  }}
-                >
-                  <a>Logout</a>
-                </li>
-              </ul>
-            </div>
+            )}
           </>
         ) : (
           <>

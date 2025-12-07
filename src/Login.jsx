@@ -4,7 +4,7 @@ import { useNavigate } from "react-router";
 import useAuth from "./useAuth";
 
 const Login = () => {
-  let { loginUser } = useAuth();
+  let { loginUser, user } = useAuth();
   const navigate = useNavigate();
   let {
     register,
@@ -23,6 +23,7 @@ const Login = () => {
         console.log(error);
       });
   };
+  console.log(user);
   return (
     <div>
       <div className="hero bg-base-200 min-h-screen">

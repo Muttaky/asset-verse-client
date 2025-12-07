@@ -3,6 +3,7 @@ import { useForm } from "react-hook-form";
 import useAuth from "../useAuth";
 import axios from "axios";
 import { useNavigate } from "react-router";
+import { toast } from "react-toastify";
 
 const Register = () => {
   let { registerUser, updateUserProfile } = useAuth();
@@ -16,6 +17,33 @@ const Register = () => {
   let handleRegister = (data) => {
     console.log(data);
     const image = data.photo[0];
+    const today = new Date().toISOString().split("T")[0];
+    const newUser = {
+      role: "hr",
+      name: data.name,
+      email: data.email,
+      dob: data.dob,
+      createdAt: today,
+      updatedAt: today,
+      companyName: data.companyName,
+      packageLimit: 5,
+      currentEP: 0,
+      subscribtion: "basic",
+    };
+    fetch("http://localhost:3000/users", {
+      method: "POST",
+      headers: {
+        "content-type": "application/json",
+      },
+      body: JSON.stringify(newUser),
+    })
+      .then((res) => res.json())
+      .then((data) => {
+        console.log("after post user", data);
+        if (data.insertedId) {
+          toast("user added successfully");
+        }
+      });
     registerUser(data.email, data.password)
       .then((result) => {
         console.log(result.user);
@@ -66,6 +94,19 @@ const Register = () => {
                     type="text"
                     className="input"
                     placeholder="Name"
+                  />
+                  <label className="label">dateOfBirth</label>
+                  <input
+                    {...register("dob", { required: true })}
+                    type="date"
+                    className="input"
+                  />
+                  <label className="label">companyName</label>
+                  <input
+                    {...register("companyName", { required: true })}
+                    type="text"
+                    className="input"
+                    placeholder="companyName"
                   />
                   <label className="label">Email</label>
                   <input
