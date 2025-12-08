@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { Link } from "react-router";
+import { Link, useLoaderData } from "react-router";
 import {
   FaClipboardList,
   FaClock,
@@ -11,38 +11,9 @@ import {
 } from "react-icons/fa";
 
 // Placeholder Data for Employee's Asset Requests
-const initialRequests = [
-  {
-    id: 201,
-    assetName: "4K External Monitor",
-    type: "Returnable",
-    requestedOn: "2024-12-05",
-    status: "Pending",
-  },
-  {
-    id: 202,
-    assetName: "Wireless Keyboard & Mouse",
-    type: "Returnable",
-    requestedOn: "2024-11-20",
-    status: "Approved",
-  },
-  {
-    id: 203,
-    assetName: "Company Hoodie (M)",
-    type: "Non-returnable",
-    requestedOn: "2024-11-10",
-    status: "Rejected",
-  },
-  {
-    id: 204,
-    assetName: "Second Laptop Charger",
-    type: "Returnable",
-    requestedOn: "2024-12-01",
-    status: "Pending",
-  },
-];
 
 const MyRequest = () => {
+  const initialRequests = useLoaderData();
   const [requests, setRequests] = useState(initialRequests);
   const [searchTerm, setSearchTerm] = useState("");
 
@@ -150,22 +121,20 @@ const MyRequest = () => {
                   <td>
                     <div
                       className={`badge ${
-                        request.type === "Returnable"
+                        request.assetType === "Returnable"
                           ? "badge-info"
                           : "badge-secondary"
                       } text-white font-medium`}
                     >
-                      {request.type}
+                      {request.assetType}
                     </div>
                   </td>
-                  <td className="text-sm opacity-80">{request.requestedOn}</td>
-                  <td>{getStatusBadge(request.status)}</td>
+                  <td className="text-sm opacity-80">{request.requestDate}</td>
+                  <td>{request.status}</td>
                   <td className="text-center">
-                    {request.status === "Pending" ? (
+                    {request.status === "pending" ? (
                       <button
-                        onClick={() =>
-                          handleCancelRequest(request.id, request.assetName)
-                        }
+                        onClick={() => handleCancelRequest(request)}
                         className="btn btn-sm btn-error btn-outline transition-transform hover:scale-105"
                         aria-label="Cancel Request"
                       >

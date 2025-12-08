@@ -8,7 +8,7 @@ const Root = () => {
   return (
     <div>
       <Header users={users}></Header>
-      <Outlet></Outlet>
+      <Outlet context={{ users }}></Outlet>
       <Footer></Footer>
       <ToastContainer />
     </div>

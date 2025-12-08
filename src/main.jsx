@@ -32,6 +32,7 @@ let router = createBrowserRouter([
     children: [
       {
         index: true,
+        loader: () => fetch("http://localhost:3000/packages"),
         Component: Home,
       },
       {
@@ -49,6 +50,7 @@ let router = createBrowserRouter([
       },
       {
         path: "/assets-list",
+        loader: () => fetch("http://localhost:3000/assets"),
         element: (
           <PrivateRoute>
             <AssetsList></AssetsList>
@@ -99,6 +101,7 @@ let router = createBrowserRouter([
       },
       {
         path: "/assets",
+        loader: () => fetch("http://localhost:3000/assets"),
         element: (
           <PrivateRoute>
             <Assets></Assets>
@@ -123,6 +126,7 @@ let router = createBrowserRouter([
       },
       {
         path: "/my-request",
+        loader: () => fetch("http://localhost:3000/requests"),
         element: (
           <PrivateRoute>
             <MyRequest></MyRequest>

@@ -1,66 +1,16 @@
 import React, { useState } from "react";
-import { Link } from "react-router";
+import { Link, useLoaderData } from "react-router";
 import { FaSearch, FaBoxes, FaPlusCircle, FaFilter } from "react-icons/fa";
-
+import { toast } from "react-toastify";
+import useAuth from "../useAuth";
 // Placeholder Data for All Company Assets (Simulating data fetched from the HR inventory)
-const initialAssets = [
-  {
-    id: 1,
-    name: "MacBook Pro M3",
-    type: "Returnable",
-    stock: 5,
-    assigned: 10,
-    totalStock: 15,
-    isAvailable: true,
-  },
-  {
-    id: 2,
-    name: "Ergonomic Office Chair",
-    type: "Returnable",
-    stock: 5,
-    assigned: 45,
-    totalStock: 50,
-    isAvailable: true,
-  },
-  {
-    id: 3,
-    name: "Company Swag T-Shirt (L)",
-    type: "Non-returnable",
-    stock: 50,
-    assigned: 150,
-    totalStock: 200,
-    isAvailable: true,
-  },
-  {
-    id: 4,
-    name: "4K External Monitor",
-    type: "Returnable",
-    stock: 0,
-    assigned: 25,
-    totalStock: 25,
-    isAvailable: false,
-  }, // Out of Stock
-  {
-    id: 5,
-    name: "Wireless Keyboard & Mouse",
-    type: "Returnable",
-    stock: 20,
-    assigned: 40,
-    totalStock: 60,
-    isAvailable: true,
-  },
-  {
-    id: 6,
-    name: "Water Bottle",
-    type: "Non-returnable",
-    stock: 100,
-    assigned: 0,
-    totalStock: 100,
-    isAvailable: true,
-  },
-];
+import { useNavigate } from "react-router";
 
 const Assets = () => {
+  let { user } = useAuth();
+  const navigate = useNavigate();
+
+  const initialAssets = useLoaderData();
   const [searchTerm, setSearchTerm] = useState("");
   const [filterType, setFilterType] = useState("All");
 
@@ -74,11 +24,41 @@ const Assets = () => {
   });
 
   // --- Placeholder Action Handler ---
-  const handleRequestAsset = (assetName) => {
-    // In a real application, this would navigate the user to a request form
+  const handleRequestAsset = (asset) => {
+    //DB start
+    const today = new Date().toISOString().split("T")[0];
+    const newRequest = {
+      assetId: asset._id,
+      assetName: asset.name,
+      assetType: asset.type,
+      requestDate: today,
+      companyName: asset.companyName,
+      epName: user.displayName,
+      epEmail: user.email,
+      hrEmail: asset.email,
+      status: "pending",
+      approvalDate: "N/A",
+    };
+    fetch("http://localhost:3000/requests", {
+      method: "POST",
+      headers: {
+        "content-type": "application/json",
+      },
+      body: JSON.stringify(newRequest),
+    })
+      .then((res) => res.json())
+      .then((data) => {
+        console.log("after post asset", data);
+        if (data.insertedId) {
+          toast("asset added successfully");
+        }
+      });
+
+    navigate("/my-request");
+
     // or submit a request directly via an API call.
-    alert(
-      `Request submitted for: ${assetName}. HR will review your request shortly.`
+    toast(
+      `Request submitted for: ${asset.name}. HR will review your request shortly.`
     );
     // Navigate to the My Requests page after submission (Placeholder logic)
     // Link to="/my-request" is the path you defined.
@@ -118,8 +98,8 @@ const Assets = () => {
             onChange={(e) => setFilterType(e.target.value)}
           >
             <option value="All">All Types</option>
-            <option value="Returnable">Returnable</option>
-            <option value="Non-returnable">Non-returnable</option>
+            <option value="returnable">Returnable</option>
+            <option value="non-returnable">Non-returnable</option>
           </select>
         </div>
       </div>
@@ -129,7 +109,7 @@ const Assets = () => {
         {filteredAssets.length > 0 ? (
           filteredAssets.map((asset) => (
             <div
-              key={asset.id}
+              key={asset._id}
               className="card bg-base-100 shadow-xl border-t-4 border-primary/50"
             >
               <div className="card-body">
@@ -160,29 +140,25 @@ const Assets = () => {
                         asset.isAvailable ? "text-success" : "text-error"
                       }`}
                     >
-                      {asset.stock} / {asset.totalStock}
+                      {asset.availableQuantity} / {asset.quantity}
                     </span>
                   </div>
                   {/* Status Badge */}
                   <div
-                    className={`badge ${
-                      asset.isAvailable
-                        ? "badge-success badge-outline"
-                        : "badge-error"
-                    }`}
+                    className={`badge badge-success badge-outline
+                        
+                    `}
                   >
-                    {asset.isAvailable ? "In Stock" : "Out of Stock"}
+                    In Stock
                   </div>
                 </div>
 
                 <div className="card-actions justify-end">
                   <button
-                    onClick={() => handleRequestAsset(asset.name)}
+                    onClick={() => handleRequestAsset(asset)}
                     className="btn btn-primary btn-block"
-                    disabled={!asset.isAvailable}
                   >
-                    <FaPlusCircle />{" "}
-                    {asset.isAvailable ? "Request Asset" : "Out of Stock"}
+                    <FaPlusCircle /> Request Asset
                   </button>
                 </div>
               </div>

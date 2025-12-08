@@ -1,158 +1,127 @@
-import React, { useState } from "react";
-import { FaBoxes, FaSave, FaSync, FaInfoCircle } from "react-icons/fa";
-
+import React from "react";
+import { useForm } from "react-hook-form";
+import axios from "axios";
+import { useNavigate, useOutletContext } from "react-router";
+import { toast } from "react-toastify";
+import useAuth from "../useAuth";
 const AddAssets = () => {
-  // 1. State for form inputs
-  const [assetName, setAssetName] = useState("");
-  const [assetType, setAssetType] = useState("Returnable"); // Default to Returnable
-  const [stockQuantity, setStockQuantity] = useState("");
-  const [description, setDescription] = useState("");
-  const [loading, setLoading] = useState(false);
+  let { user } = useAuth();
+  let { users } = useOutletContext();
+  let newUser = users.find((u) => u.email === user.email);
 
-  // 2. Placeholder form submission logic
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    setLoading(true);
+  const navigate = useNavigate();
+  let {
+    register,
+    handleSubmit,
+    formState: { errors },
+  } = useForm();
 
-    const newAsset = {
-      name: assetName,
-      type: assetType,
-      stock: parseInt(stockQuantity),
-      description: description,
-      addedBy: "HR Manager (Placeholder)",
-      dateAdded: new Date().toISOString(),
-    };
+  let handleRegister = (data) => {
+    //imageBB start
+    const image = data.photo[0];
+    const formData = new FormData();
+    formData.append("image", image);
+    const image_API = `https://api.imgbb.com/1/upload?key=${
+      import.meta.env.VITE_image_host
+    }`;
+    axios.post(image_API, formData).then((res) => {
+      console.log("after image upoad", res.data.data.url);
 
-    // --- API Call Simulation ---
-    console.log("Submitting New Asset:", newAsset);
+      //DB start
+      const today = new Date().toISOString().split("T")[0];
+      const newAsset = {
+        photo: res.data.data.url,
+        name: data.name,
+        type: data.type,
+        quantity: data.pq,
+        availableQuantity: data.pq,
+        createdAt: today,
+        companyName: newUser.companyName,
+        email: user.email,
+      };
+      fetch("http://localhost:3000/assets", {
+        method: "POST",
+        headers: {
+          "content-type": "application/json",
+        },
+        body: JSON.stringify(newAsset),
+      })
+        .then((res) => res.json())
+        .then((data) => {
+          console.log("after post asset", data);
+          if (data.insertedId) {
+            toast("asset added successfully");
+          }
+        });
 
-    setTimeout(() => {
-      setLoading(false);
-      // Success Notification Placeholder
-      alert(
-        `Asset '${assetName}' (${stockQuantity} units) added successfully!`
-      );
-
-      // Reset form
-      setAssetName("");
-      setAssetType("Returnable");
-      setStockQuantity("");
-      setDescription("");
-    }, 1500);
+      navigate("/assets-list");
+    });
   };
-
   return (
-    <div className="p-4 md:p-8">
-      <h1 className="text-3xl font-bold text-secondary mb-2 flex items-center gap-3">
-        <FaBoxes className="text-primary" /> Add New Asset to Inventory
-      </h1>
-      <p className="text-gray-500 mb-6">
-        Fill out the details below to register a new corporate asset.
-      </p>
-
-      {/* Main Form Card */}
-      <div className="card bg-base-100 shadow-2xl p-6 md:p-10 max-w-3xl mx-auto">
-        <form onSubmit={handleSubmit}>
-          {/* Asset Name Field */}
-          <div className="form-control mb-4">
-            <label className="label">
-              <span className="label-text text-lg font-semibold text-base-content">
-                Asset Name <span className="text-error">*</span>
-              </span>
-            </label>
-            <input
-              type="text"
-              placeholder="e.g., MacBook Pro M3, Office Chair, ID Card"
-              className="input input-bordered w-full input-lg focus:border-primary"
-              value={assetName}
-              onChange={(e) => setAssetName(e.target.value)}
-              required
-            />
+    <div>
+      <div className="hero bg-base-200 min-h-screen">
+        <div className="hero-content flex-col lg:flex-row-reverse">
+          <div className="text-center lg:text-left">
+            <h1 className="text-5xl font-bold">Add Assets</h1>
           </div>
+          <div className="card bg-base-100 w-full max-w-sm shrink-0 shadow-2xl">
+            <div className="card-body">
+              <form onSubmit={handleSubmit(handleRegister)}>
+                <fieldset className="fieldset">
+                  <label className="label">Photo</label>
+                  <input
+                    {...register("photo", { required: true })}
+                    type="file"
+                    className="file-input"
+                    placeholder="Photo"
+                  />
+                  <label className="label">Product Type</label>
 
-          {/* Asset Type & Stock Quantity Fields */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
-            {/* Asset Type (Returnable/Non-returnable) */}
-            <div className="form-control">
-              <label className="label">
-                <span className="label-text text-lg font-semibold text-base-content">
-                  Asset Type <span className="text-error">*</span>
-                </span>
-              </label>
-              <select
-                className="select select-bordered w-full select-lg focus:border-primary"
-                value={assetType}
-                onChange={(e) => setAssetType(e.target.value)}
-                required
-              >
-                <option value="Returnable">
-                  Returnable (e.g., Laptops, Monitors)
-                </option>
-                <option value="Non-returnable">
-                  Non-returnable (e.g., Swag, Stationery)
-                </option>
-              </select>
-              <div className="label pt-2">
-                <span className="label-text-alt flex items-center gap-1 text-xs">
-                  <FaInfoCircle className="text-info" /> Essential for stock and
-                  employee tracking.
-                </span>
-              </div>
-            </div>
+                  <div className="flex gap-4">
+                    {/* Returnable */}
+                    <label className="flex items-center gap-2 cursor-pointer">
+                      <input
+                        type="radio"
+                        value="returnable"
+                        {...register("type")}
+                        className="radio radio-secondary"
+                      />
+                      <span>Returnable</span>
+                    </label>
 
-            {/* Stock Quantity */}
-            <div className="form-control">
-              <label className="label">
-                <span className="label-text text-lg font-semibold text-base-content">
-                  Stock Quantity <span className="text-error">*</span>
-                </span>
-              </label>
-              <input
-                type="number"
-                placeholder="Total units available"
-                className="input input-bordered w-full input-lg focus:border-primary"
-                value={stockQuantity}
-                onChange={(e) => setStockQuantity(e.target.value)}
-                min="1"
-                required
-              />
+                    {/* Non-returnable */}
+                    <label className="flex items-center gap-2 cursor-pointer">
+                      <input
+                        type="radio"
+                        value="non-returnable"
+                        {...register("type")}
+                        className="radio radio-secondary"
+                      />
+                      <span>Non-returnable</span>
+                    </label>
+                  </div>
+
+                  <label className="label">productName</label>
+                  <input
+                    {...register("name", { required: true })}
+                    type="text"
+                    className="input"
+                    placeholder="productName"
+                  />
+                  <label className="label">productQuantity</label>
+                  <input
+                    {...register("pq", { required: true })}
+                    type="number"
+                    className="input"
+                    placeholder="productQuantity"
+                  />
+
+                  <button className="btn btn-neutral mt-4">Add Assets</button>
+                </fieldset>
+              </form>
             </div>
           </div>
-
-          {/* Description Field */}
-          <div className="form-control mb-8">
-            <label className="label">
-              <span className="label-text text-lg font-semibold text-base-content">
-                Product Description / Notes (Optional)
-              </span>
-            </label>
-            <textarea
-              placeholder="Include details like model number, condition, or purchasing info."
-              className="textarea textarea-bordered h-32 focus:border-primary"
-              value={description}
-              onChange={(e) => setDescription(e.target.value)}
-            ></textarea>
-          </div>
-
-          {/* Submit Button */}
-          <div className="form-control mt-6">
-            <button
-              type="submit"
-              className={`btn btn-primary btn-lg font-bold transition-transform duration-300 hover:scale-[1.01]`}
-              disabled={loading}
-            >
-              {loading ? (
-                <>
-                  <FaSync className="animate-spin" /> Adding Asset...
-                </>
-              ) : (
-                <>
-                  <FaSave /> Save Asset to Inventory
-                </>
-              )}
-            </button>
-          </div>
-        </form>
+        </div>
       </div>
     </div>
   );

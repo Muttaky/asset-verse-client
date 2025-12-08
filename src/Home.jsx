@@ -1,5 +1,5 @@
 import React from "react";
-import { Link } from "react-router";
+import { Link, useLoaderData } from "react-router";
 // Using react-icons for professional, consistent iconography
 import {
   FaBoxes,
@@ -9,34 +9,6 @@ import {
   FaWarehouse,
   FaHandshake,
 } from "react-icons/fa";
-
-const packagesData = [
-  {
-    name: "Basic",
-    employeeLimit: 5,
-    price: 5,
-    features: ["Asset Tracking", "Employee Management", "Basic Support"],
-    bgColor: "bg-base-200",
-    btnClass: "btn-secondary",
-  },
-  {
-    name: "Standard",
-    employeeLimit: 10,
-    price: 8,
-    features: ["All Basic features", "Advanced Analytics", "Priority Support"],
-    bgColor: "bg-primary/10",
-    btnClass: "btn-primary",
-    isRecommended: true,
-  },
-  {
-    name: "Premium",
-    employeeLimit: 20,
-    price: 15,
-    features: ["All Standard features", "Custom Branding", "24/7 Support"],
-    bgColor: "bg-base-200",
-    btnClass: "btn-secondary",
-  },
-];
 
 const benefitsData = [
   {
@@ -70,6 +42,8 @@ const benefitsData = [
 ];
 
 const Home = () => {
+  const packagesData = useLoaderData();
+
   return (
     <div className="min-h-screen">
       <section className="hero bg-base-100 min-h-[85vh] py-16">
@@ -81,7 +55,7 @@ const Home = () => {
             // Placeholder for Framer Motion animation properties (e.g., initial, animate, transition)
           >
             <img
-              src="https://images.unsplash.com/photo-1549923746-c50e168a86a4?q=80&w=2670&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D"
+              src="https://velosiaims.com/wp-content/uploads/2022/07/asset-mgmt-scaled.jpg"
               className="w-full rounded-2xl shadow-2xl object-cover aspect-video"
               alt="Professional corporate setting showing asset management"
             />
@@ -157,23 +131,15 @@ const Home = () => {
           </p>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-            {packagesData.map((pkg, index) => (
+            {packagesData.map((pkg) => (
               <div
-                key={index}
-                className={`card shadow-2xl p-8 flex flex-col justify-between ${
-                  pkg.bgColor
-                } ${
-                  pkg.isRecommended
-                    ? "border-4 border-primary scale-[1.05]"
-                    : "border border-base-300"
-                }`}
+                key={pkg._id}
+                className={`card shadow-2xl p-8 flex flex-col justify-between 
+                  bg-base-200
+                `}
               >
                 <div>
-                  <h3
-                    className={`text-3xl font-bold mb-2 ${
-                      pkg.isRecommended ? "text-primary" : "text-secondary"
-                    }`}
-                  >
+                  <h3 className={`text-3xl font-bold mb-2 text-primary`}>
                     {pkg.name}
                   </h3>
                   {pkg.isRecommended && (
@@ -224,7 +190,7 @@ const Home = () => {
 
                 <Link
                   to="/join-hr"
-                  className={`btn ${pkg.btnClass} btn-block mt-6 transition-transform duration-300 hover:scale-105`}
+                  className={`btn btn-secondary} btn-block mt-6 transition-transform duration-300 hover:scale-105`}
                 >
                   Start with {pkg.name}
                 </Link>

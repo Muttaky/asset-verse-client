@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { Link } from "react-router";
+import { Link, useLoaderData } from "react-router";
 import {
   FaEdit,
   FaTrash,
@@ -9,55 +9,9 @@ import {
 } from "react-icons/fa";
 
 // Placeholder Data for Assets List (Simulating data fetched from a backend)
-const initialAssets = [
-  {
-    id: 1,
-    name: "MacBook Pro M3",
-    type: "Returnable",
-    stock: 15,
-    assigned: 10,
-    addedBy: "HR Smith",
-    date: "2024-05-01",
-  },
-  {
-    id: 2,
-    name: "Ergonomic Office Chair",
-    type: "Returnable",
-    stock: 50,
-    assigned: 45,
-    addedBy: "HR Smith",
-    date: "2024-04-15",
-  },
-  {
-    id: 3,
-    name: "Company Swag T-Shirt",
-    type: "Non-returnable",
-    stock: 200,
-    assigned: 150,
-    addedBy: "HR Jane",
-    date: "2024-03-20",
-  },
-  {
-    id: 4,
-    name: "4K External Monitor",
-    type: "Returnable",
-    stock: 25,
-    assigned: 25,
-    addedBy: "HR Smith",
-    date: "2024-05-10",
-  },
-  {
-    id: 5,
-    name: "Wireless Keyboard & Mouse",
-    type: "Returnable",
-    stock: 60,
-    assigned: 40,
-    addedBy: "HR Jane",
-    date: "2024-04-25",
-  },
-];
 
 const AssetsList = () => {
+  const initialAssets = useLoaderData();
   const [searchTerm, setSearchTerm] = useState("");
 
   // Filter assets based on search term (case-insensitive)
@@ -113,7 +67,6 @@ const AssetsList = () => {
           <thead className="bg-base-200 text-primary">
             <tr>
               <th className="font-semibold text-base">Name</th>
-              <th className="font-semibold text-base">Type</th>
               <th className="font-semibold text-base text-center">Stock</th>
               <th className="font-semibold text-base text-center">Assigned</th>
               <th className="font-semibold text-base text-center">Available</th>
@@ -132,24 +85,13 @@ const AssetsList = () => {
                   <td className="font-medium text-base-content">
                     {asset.name}
                   </td>
-                  <td>
-                    {/* DaisyUI Badge for visual distinction of asset type */}
-                    <div
-                      className={`badge ${
-                        asset.type === "Returnable"
-                          ? "badge-primary"
-                          : "badge-secondary"
-                      } text-white font-medium`}
-                    >
-                      {asset.type}
-                    </div>
-                  </td>
-                  <td className="text-center">{asset.stock}</td>
+
+                  <td className="text-center">{asset.quantity}</td>
                   <td className="text-center text-warning font-semibold">
-                    {asset.assigned}
+                    {asset.assigned || 5}
                   </td>
                   <td className="text-center text-success font-semibold">
-                    {asset.stock - asset.assigned}
+                    {asset.stock - asset.assigned || 5}
                   </td>
                   <td className="flex justify-center space-x-2">
                     {/* Action Buttons using consistent colors */}
