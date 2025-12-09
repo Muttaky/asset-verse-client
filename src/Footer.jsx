@@ -15,8 +15,8 @@ const Footer = () => {
   // Define quick navigation links
   const quickLinks = [
     { name: "Home", path: "/" },
-    { name: "Join as Employee", path: "/join-employee" },
-    { name: "Join as HR Manager", path: "/join-hr" },
+    { name: "Join as Employee", path: "/ep-reg" },
+    { name: "Join as HR Manager", path: "/hr-reg" },
     { name: "Packages", path: "/#packages" },
     { name: "Features", path: "/#features" },
   ];
@@ -29,10 +29,22 @@ const Footer = () => {
 
   // Define social media links and icons
   const socialLinks = [
-    { icon: <FaXTwitter className="h-5 w-5 fill-current" />, url: "#" },
-    { icon: <FaFacebookF className="h-5 w-5 fill-current" />, url: "#" },
-    { icon: <FaInstagram className="h-5 w-5 fill-current" />, url: "#" },
-    { icon: <FaLinkedinIn className="h-5 w-5 fill-current" />, url: "#" },
+    {
+      icon: <FaXTwitter className="h-5 w-5 fill-current" />,
+      url: "https:x.com",
+    },
+    {
+      icon: <FaFacebookF className="h-5 w-5 fill-current" />,
+      url: "https:fb.com",
+    },
+    {
+      icon: <FaInstagram className="h-5 w-5 fill-current" />,
+      url: "https:instagram.com",
+    },
+    {
+      icon: <FaLinkedinIn className="h-5 w-5 fill-current" />,
+      url: "https:linkedin.com",
+    },
   ];
 
   return (
