@@ -78,13 +78,13 @@ const Home = () => {
             </p>
             <div className="flex space-x-4">
               <Link
-                to="/join-hr"
+                to="/hr-reg"
                 className="btn btn-primary btn-lg shadow-xl hover:shadow-2xl transition-all duration-300"
               >
                 Join as HR Manager
               </Link>
               <Link
-                to="/join-employee"
+                to="/ep-reg"
                 className="btn btn-secondary btn-outline btn-lg hover:bg-secondary hover:text-white transition-all duration-300"
               >
                 Join as Employee

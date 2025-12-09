@@ -10,6 +10,7 @@ import {
   FaSync,
 } from "react-icons/fa";
 import useAuth from "../useAuth";
+import { toast } from "react-toastify";
 // Placeholder Data for Employee List (Simulating data affiliated after first asset approval)
 
 const EPList = () => {
@@ -29,8 +30,47 @@ const EPList = () => {
   // --- Core HR Action: Remove Employee ---
   // Note: According to the requirements, removing an employee should automatically
   // handle the return of all 'Returnable' assets and end the company affiliation.
-  const handleRemoveEmployee = (ep) => {
-    alert(`${ep.epName} has been successfully removed and assets returned.`);
+  const handleRemoveEmployee = async (ep) => {
+    try {
+      let response = await fetch(
+        `http://localhost:3000/affiliations/${ep._id}`,
+        {
+          method: "DELETE",
+        }
+      );
+      const data = await response.json();
+      if (data.deletedCount === 1) {
+        toast(
+          `${ep.epName} has been successfully removed and assets returned.`
+        );
+      } else {
+        toast.error("Deletion failed. Try again.");
+      }
+    } catch (error) {
+      toast.error("An error occurred during deletion.");
+      console.error(error);
+    }
+
+    try {
+      const response = await fetch(
+        `http://localhost:3000/assigneds?hrEmail=${user.email}&epEmail=${ep.epEmail}`,
+        {
+          method: "DELETE",
+        }
+      );
+
+      const data = await response.json();
+
+      if (data.deletedCount > 0) {
+        toast(`${data.deletedCount} asset(s) removed for ${ep.epEmail}`);
+        window.location.reload();
+      } else {
+        toast.error("No assigned assets found for this employee.");
+      }
+    } catch (error) {
+      console.error(error);
+      toast.error("An error occurred.");
+    }
   };
 
   return (
