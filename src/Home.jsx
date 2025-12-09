@@ -1,5 +1,7 @@
 import React from "react";
 import { Link, useLoaderData } from "react-router";
+import useAuth from "./useAuth";
+
 // Using react-icons for professional, consistent iconography
 import {
   FaBoxes,
@@ -42,6 +44,7 @@ const benefitsData = [
 ];
 
 const Home = () => {
+  let { user } = useAuth();
   const packagesData = useLoaderData();
 
   return (
@@ -76,20 +79,24 @@ const Home = () => {
               companies efficiently manage physical equipment and track employee
               assignments, ensuring zero loss and total accountability.
             </p>
-            <div className="flex space-x-4">
-              <Link
-                to="/hr-reg"
-                className="btn btn-primary btn-lg shadow-xl hover:shadow-2xl transition-all duration-300"
-              >
-                Join as HR Manager
-              </Link>
-              <Link
-                to="/ep-reg"
-                className="btn btn-secondary btn-outline btn-lg hover:bg-secondary hover:text-white transition-all duration-300"
-              >
-                Join as Employee
-              </Link>
-            </div>
+            {!user ? (
+              <div className="flex space-x-4">
+                <Link
+                  to="/hr-reg"
+                  className="btn btn-primary btn-lg shadow-xl hover:shadow-2xl transition-all duration-300"
+                >
+                  Join as HR Manager
+                </Link>
+                <Link
+                  to="/ep-reg"
+                  className="btn btn-secondary btn-outline btn-lg hover:bg-secondary hover:text-white transition-all duration-300"
+                >
+                  Join as Employee
+                </Link>
+              </div>
+            ) : (
+              <div></div>
+            )}
           </div>
         </div>
       </section>
