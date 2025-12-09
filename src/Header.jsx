@@ -16,7 +16,7 @@ const Header = ({ users }) => {
             <div tabIndex={0} role="button" className="btn btn-ghost md:hidden">
               <svg
                 xmlns="http://www.w3.org/2000/svg"
-                className="h-5 w-5"
+                className="h-6 w-6 text-primary"
                 fill="none"
                 viewBox="0 0 24 24"
                 stroke="currentColor"
@@ -25,7 +25,7 @@ const Header = ({ users }) => {
                 <path
                   strokeLinecap="round"
                   strokeLinejoin="round"
-                  strokeWidth="2"
+                  strokeWidth="4"
                   d="M4 6h16M4 12h8m-8 6h16"
                 />{" "}
               </svg>
