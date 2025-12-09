@@ -76,6 +76,7 @@ let router = createBrowserRouter([
       },
       {
         path: "/ep-list",
+        loader: () => fetch("http://localhost:3000/affiliations"),
         element: (
           <PrivateRoute>
             <EPList></EPList>

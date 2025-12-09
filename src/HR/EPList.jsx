@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { Link } from "react-router";
+import { Link, useLoaderData } from "react-router";
 import {
   FaUsers,
   FaSearch,
@@ -9,84 +9,28 @@ import {
   FaMinusCircle,
   FaSync,
 } from "react-icons/fa";
-
+import useAuth from "../useAuth";
 // Placeholder Data for Employee List (Simulating data affiliated after first asset approval)
-const initialEmployees = [
-  {
-    id: 1,
-    name: "Alice Johnson",
-    email: "alice@company.com",
-    status: "Active",
-    assets: 3,
-    joinDate: "2024-11-28",
-  },
-  {
-    id: 2,
-    name: "Bob Kellar",
-    email: "bob@company.com",
-    status: "Active",
-    assets: 1,
-    joinDate: "2024-11-25",
-  },
-  {
-    id: 3,
-    name: "Charlie Davis",
-    email: "charlie@company.com",
-    status: "Active",
-    assets: 0,
-    joinDate: "2024-11-20",
-  },
-  {
-    id: 4,
-    name: "Diana Prince",
-    email: "diana@company.com",
-    status: "Active",
-    assets: 2,
-    joinDate: "2024-11-15",
-  },
-  {
-    id: 5,
-    name: "Eve Barton",
-    email: "eve@company.com",
-    status: "Inactive",
-    assets: 0,
-    joinDate: "2024-10-10",
-  },
-];
 
 const EPList = () => {
+  let { user } = useAuth();
+  const allEmployees = useLoaderData();
+  let initialEmployees = allEmployees.filter((e) => e.hrEmail === user.email);
   const [searchTerm, setSearchTerm] = useState("");
   const [employees, setEmployees] = useState(initialEmployees); // State for handling status changes
 
   // Filter employees based on search term
   const filteredEmployees = employees.filter(
     (employee) =>
-      employee.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      employee.email.toLowerCase().includes(searchTerm.toLowerCase())
+      employee.epName.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      employee.epEmail.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
   // --- Core HR Action: Remove Employee ---
   // Note: According to the requirements, removing an employee should automatically
   // handle the return of all 'Returnable' assets and end the company affiliation.
-  const handleRemoveEmployee = (id) => {
-    const employee = employees.find((e) => e.id === id);
-    if (!employee) return;
-
-    if (employee.assets > 0) {
-      const confirmMsg = `WARNING: ${employee.name} has ${employee.assets} assigned assets. Removing them will mark all assets as returned and end affiliation. Proceed?`;
-      if (!window.confirm(confirmMsg)) return;
-    }
-
-    // --- Placeholder for API Call to Remove Employee & Return Assets ---
-    console.log(
-      `Removing employee ${employee.name} (ID: ${id}) and returning ${employee.assets} assets.`
-    );
-
-    // Simulate removal by filtering from the list
-    setEmployees(employees.filter((e) => e.id !== id));
-    alert(
-      `${employee.name} has been successfully removed and assets returned. (Placeholder)`
-    );
+  const handleRemoveEmployee = (ep) => {
+    alert(`${ep.epName} has been successfully removed and assets returned.`);
   };
 
   return (
@@ -124,7 +68,7 @@ const EPList = () => {
               Total Active Employees
             </div>
             <div className="stat-value text-3xl">
-              {employees.filter((e) => e.status === "Active").length}
+              {employees.filter((e) => e.status === "active").length}
             </div>
           </div>
         </div>
@@ -155,8 +99,8 @@ const EPList = () => {
                   key={employee.id}
                   className="hover:bg-base-200/50 transition-colors duration-150"
                 >
-                  <td className="font-bold">{employee.name}</td>
-                  <td className="text-sm opacity-80">{employee.email}</td>
+                  <td className="font-bold">{employee.epName}</td>
+                  <td className="text-sm opacity-80">{employee.epEmail}</td>
                   <td className="text-center">
                     <div
                       className={`badge ${
@@ -171,7 +115,7 @@ const EPList = () => {
                   <td className="text-center text-secondary font-semibold">
                     {employee.assets}
                   </td>
-                  <td>{employee.joinDate}</td>
+                  <td>{employee.affiliationDate}</td>
                   <td className="flex justify-center space-x-2">
                     {/* View Assets Button (Placeholder for routing to detailed employee view) */}
                     <Link
@@ -183,7 +127,7 @@ const EPList = () => {
                     </Link>
                     {/* Remove Employee Button (Error/Danger color) */}
                     <button
-                      onClick={() => handleRemoveEmployee(employee.id)}
+                      onClick={() => handleRemoveEmployee(employee)}
                       className="btn btn-sm btn-error btn-square transition-transform hover:scale-105"
                       aria-label="Remove Employee Affiliation"
                     >

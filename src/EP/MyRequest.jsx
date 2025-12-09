@@ -9,11 +9,15 @@ import {
   FaSync,
   FaSearch,
 } from "react-icons/fa";
+import useAuth from "../useAuth";
 
 // Placeholder Data for Employee's Asset Requests
 
 const MyRequest = () => {
-  const initialRequests = useLoaderData();
+  let { user } = useAuth();
+  const allRequests = useLoaderData();
+  let initialRequests = allRequests.filter((r) => r.epEmail === user.email);
+
   const [requests, setRequests] = useState(initialRequests);
   const [searchTerm, setSearchTerm] = useState("");
 
