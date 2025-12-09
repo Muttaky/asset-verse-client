@@ -30,6 +30,7 @@ const Assets = () => {
     const newRequest = {
       assetId: asset._id,
       assetName: asset.name,
+      assetImage: asset.photo,
       assetType: asset.type,
       requestDate: today,
       companyName: asset.companyName,

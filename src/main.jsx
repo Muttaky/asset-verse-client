@@ -67,6 +67,7 @@ let router = createBrowserRouter([
       },
       {
         path: "/request",
+        loader: () => fetch("http://localhost:3000/requests"),
         element: (
           <PrivateRoute>
             <Request></Request>

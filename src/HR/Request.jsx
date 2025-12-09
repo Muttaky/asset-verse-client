@@ -1,5 +1,5 @@
-import React, { useState } from "react";
-import { Link } from "react-router";
+import React, { useEffect, useState } from "react";
+import { Link, useLoaderData } from "react-router";
 import {
   FaCheckCircle,
   FaTimesCircle,
@@ -9,7 +9,8 @@ import {
   FaSync,
   FaClipboardList,
 } from "react-icons/fa";
-
+import { toast } from "react-toastify";
+import useAuth from "../useAuth";
 // Placeholder Data for HR Manager's package status (MUST BE ENFORCED)
 // In a real application, this would be fetched from a global Auth/HR Context.
 const hrPackageStatus = {
@@ -18,60 +19,19 @@ const hrPackageStatus = {
 };
 
 // Placeholder Data for Requests List (Simulating data fetched from a backend)
-const initialRequests = [
-  {
-    id: 101,
-    assetName: "MacBook Pro M3",
-    employee: "Alice Johnson",
-    email: "alice@company.com",
-    status: "Pending",
-    type: "Returnable",
-    requestedOn: "2024-11-28",
-    isFirstRequest: true,
-  },
-  {
-    id: 102,
-    assetName: "Office Desk Lamp",
-    employee: "Bob Kellar",
-    email: "bob@company.com",
-    status: "Approved",
-    type: "Returnable",
-    requestedOn: "2024-11-25",
-    isFirstRequest: false,
-  },
-  {
-    id: 103,
-    assetName: "Company T-Shirt (L)",
-    employee: "Charlie Davis",
-    email: "charlie@company.com",
-    status: "Rejected",
-    type: "Non-returnable",
-    requestedOn: "2024-11-20",
-    isFirstRequest: true,
-  },
-  {
-    id: 104,
-    assetName: "4K External Monitor",
-    employee: "Diana Prince",
-    email: "diana@company.com",
-    status: "Pending",
-    type: "Returnable",
-    requestedOn: "2024-11-15",
-    isFirstRequest: false,
-  },
-  {
-    id: 105,
-    assetName: "New Hire Emily",
-    employee: "Emily Clark",
-    email: "emily@company.com",
-    status: "Pending",
-    type: "Returnable",
-    requestedOn: "2024-11-29",
-    isFirstRequest: true,
-  }, // This request will trigger the limit warning in this demo setup
-];
 
 const Request = () => {
+  const [extraData, setExtraData] = useState([]);
+
+  useEffect(() => {
+    fetch("http://localhost:3000/affiliations")
+      .then((res) => res.json())
+      .then((data) => setExtraData(data));
+  }, []);
+  let { user } = useAuth();
+  const allRequests = useLoaderData();
+  let initialRequests = allRequests.filter((r) => r.hrEmail === user.email);
+
   const [filterStatus, setFilterStatus] = useState("All");
   const [requests, setRequests] = useState(initialRequests);
 
@@ -82,68 +42,154 @@ const Request = () => {
   });
 
   // --- Core HR Actions: Approval with Limit Enforcement & Auto-Affiliation ---
-  const handleApprove = (id) => {
-    const request = requests.find((r) => r.id === id);
-    if (!request || request.status !== "Pending") return;
+  const handleApprove = async (request) => {
+    let myAff = extraData.filter((aff) => aff.hrEmail === user.email);
+    console.log("myAff", myAff);
+    let oldAff = myAff.find((aff) => aff.epEmail === request.epEmail);
+    console.log("oldAff", oldAff);
+    //DB start
+    const today = new Date().toISOString().split("T")[0];
 
-    // 1. Package Limit Enforcement: Block approval if new employee will exceed limit
-    if (
-      request.isFirstRequest &&
-      hrPackageStatus.currentEmployees >= hrPackageStatus.packageLimit
-    ) {
-      alert(
-        `ACTION BLOCKED: Cannot approve this request. Approving ${request.employee} would exceed your current package limit of ${hrPackageStatus.packageLimit} employees. Please upgrade your package first.`
-      );
-      return;
-    }
-
-    // 2. Auto-Affiliation Logic (if first request)
-    if (request.isFirstRequest) {
-      console.log(
-        `Approving request ${id}. Auto-affiliating Employee ${request.employee}.`
-      );
-      // In a real app, the backend would handle the affiliation and increment the count.
-      // hrPackageStatus.currentEmployees++; // Placeholder: Increment employee count
+    if (oldAff) {
+      console.log("already affiliated");
     } else {
-      console.log(
-        `Approving request ${id}. Assigning asset to already affiliated employee.`
-      );
+      const newAffiliation = {
+        epName: request.epName,
+        epEmail: request.epEmail,
+        hrEmail: user.email,
+        hrPhoto: user.photoURL,
+        affiliationDate: today,
+        companyName: request.companyName,
+        status: "active",
+      };
+      fetch("http://localhost:3000/affiliations", {
+        method: "POST",
+        headers: {
+          "content-type": "application/json",
+        },
+        body: JSON.stringify(newAffiliation),
+      })
+        .then((res) => res.json())
+        .then((data) => {
+          console.log("after post affiliation", data);
+          if (data.insertedId) {
+            toast("affiliation added successfully");
+          }
+        });
     }
 
-    // Update the request status in state (simulating successful backend update)
-    setRequests(
-      requests.map((r) => (r.id === id ? { ...r, status: "Approved" } : r))
-    );
-    alert(`Request for ${request.assetName} approved!`);
+    const newAssigned = {
+      assetId: request.assetId,
+      assetName: request.assetName,
+      assetImage: request.assetImage,
+      assetType: request.assetType,
+      epName: request.epName,
+      epEmail: request.epEmail,
+      hrEmail: user.email,
+      assignmentDate: today,
+      companyName: request.companyName,
+      status: "assigned",
+    };
+    fetch("http://localhost:3000/assigneds", {
+      method: "POST",
+      headers: {
+        "content-type": "application/json",
+      },
+      body: JSON.stringify(newAssigned),
+    })
+      .then((res) => res.json())
+      .then((data) => {
+        console.log("after post assigned", data);
+        if (data.insertedId) {
+          toast("assigned added successfully");
+        }
+      });
+
+    const newStatus = {
+      assetId: request.assetId,
+      assetName: request.assetName,
+      assetType: request.assetType,
+      requestDate: request.requestDate,
+      companyName: request.companyName,
+      epName: request.epName,
+      epEmail: request.epEmail,
+      hrEmail: request.hrEmail,
+      status: "approved",
+      approvalDate: request.approvalDate,
+    };
+
+    try {
+      let response = await fetch(
+        `http://localhost:3000/requests/${request._id}`,
+        {
+          method: "PATCH",
+          headers: {
+            "content-type": "application/json",
+          },
+          body: JSON.stringify(newStatus),
+        }
+      );
+      let data = await response.json();
+      if (data.modifiedCount) {
+        toast(`Request for ${request.assetName} approved.`);
+        window.location.reload();
+      }
+    } catch (error) {
+      toast.error("Failed to update.", error);
+    }
   };
 
-  const handleReject = (id) => {
-    const request = requests.find((r) => r.id === id);
-    if (!request || request.status !== "Pending") return;
+  const handleReject = async (request) => {
+    const newStatus = {
+      assetId: request.assetId,
+      assetName: request.assetName,
+      assetType: request.assetType,
+      requestDate: request.requestDate,
+      companyName: request.companyName,
+      epName: request.epName,
+      epEmail: request.epEmail,
+      hrEmail: request.hrEmail,
+      status: "rejected",
+      approvalDate: request.approvalDate,
+    };
 
-    // Update the request status in state (simulating backend update)
-    setRequests(
-      requests.map((r) => (r.id === id ? { ...r, status: "Rejected" } : r))
-    );
-    alert(`Request for ${request.assetName} rejected.`);
+    try {
+      let response = await fetch(
+        `http://localhost:3000/requests/${request._id}`,
+        {
+          method: "PATCH",
+          headers: {
+            "content-type": "application/json",
+          },
+          body: JSON.stringify(newStatus),
+        }
+      );
+      let data = await response.json();
+      if (data.modifiedCount) {
+        toast(`Request for ${request.assetName} rejected.`);
+        window.location.reload();
+      }
+    } catch (error) {
+      toast.error("Failed to update.", error);
+    }
   };
 
   // Helper function to get DaisyUI classes based on status
   const getStatusBadge = (status) => {
     switch (status) {
-      case "Pending":
+      case "pending":
         return (
           <div className="badge badge-warning font-semibold flex items-center gap-1">
             <FaClock /> Pending
           </div>
         );
-      case "Approved":
+      case "approved":
         return (
           <div className="badge badge-success font-semibold flex items-center gap-1">
             <FaCheckCircle /> Approved
           </div>
         );
-      case "Rejected":
+      case "rejected":
         return (
           <div className="badge badge-error font-semibold flex items-center gap-1">
             <FaTimesCircle /> Rejected
@@ -217,30 +263,30 @@ const Request = () => {
                   className="hover:bg-base-200/50 transition-colors duration-150"
                 >
                   <td className="font-mono text-xs text-gray-500">
-                    {request.id}
+                    {request._id}
                   </td>
                   <td className="font-medium text-base-content">
                     {request.assetName}
                   </td>
                   <td>
-                    <div className="font-bold">{request.employee}</div>
-                    <div className="text-sm opacity-50">{request.email}</div>
+                    <div className="font-bold">{request.epName}</div>
+                    <div className="text-sm opacity-50">{request.epEmail}</div>
                   </td>
                   <td>
                     {getStatusBadge(request.status)}
-                    {request.isFirstRequest && request.status === "Pending" && (
+                    {request.isFirstRequest && request.status === "pending" && (
                       <div className="text-xs text-info mt-1 font-semibold">
                         (First Request - Affiliation required)
                       </div>
                     )}
                   </td>
-                  <td className="text-sm">{request.requestedOn}</td>
+                  <td className="text-sm">{request.requestDate}</td>
                   <td className="space-x-2">
-                    {request.status === "Pending" ? (
+                    {request.status === "pending" ? (
                       <>
                         {/* Approve Button (Primary color) */}
                         <button
-                          onClick={() => handleApprove(request.id)}
+                          onClick={() => handleApprove(request)}
                           className="btn btn-sm btn-primary transition-transform hover:scale-105"
                           aria-label="Approve Request"
                         >
@@ -248,7 +294,7 @@ const Request = () => {
                         </button>
                         {/* Reject Button (Secondary/Error color) */}
                         <button
-                          onClick={() => handleReject(request.id)}
+                          onClick={() => handleReject(request)}
                           className="btn btn-sm btn-error btn-outline transition-transform hover:scale-105"
                           aria-label="Reject Request"
                         >

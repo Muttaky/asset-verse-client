@@ -40,19 +40,19 @@ const MyRequest = () => {
   // Helper function to get DaisyUI classes and icon based on status
   const getStatusBadge = (status) => {
     switch (status) {
-      case "Pending":
+      case "pending":
         return (
           <div className="badge badge-warning text-white font-semibold flex items-center gap-1">
             <FaClock /> Pending
           </div>
         );
-      case "Approved":
+      case "approved":
         return (
           <div className="badge badge-success text-white font-semibold flex items-center gap-1">
             <FaCheckCircle /> Approved
           </div>
         );
-      case "Rejected":
+      case "rejected":
         return (
           <div className="badge badge-error text-white font-semibold flex items-center gap-1">
             <FaTimesCircle /> Rejected
@@ -130,7 +130,7 @@ const MyRequest = () => {
                     </div>
                   </td>
                   <td className="text-sm opacity-80">{request.requestDate}</td>
-                  <td>{request.status}</td>
+                  <td>{getStatusBadge(request.status)}</td>
                   <td className="text-center">
                     {request.status === "pending" ? (
                       <button
