@@ -21,14 +21,7 @@ const hrPackageStatus = {
 // Placeholder Data for Requests List (Simulating data fetched from a backend)
 
 const Request = () => {
-  const [extraData, setExtraData] = useState([]);
-
-  useEffect(() => {
-    fetch("http://localhost:3000/affiliations")
-      .then((res) => res.json())
-      .then((data) => setExtraData(data));
-  }, []);
-  let { user } = useAuth();
+  let { user, affiliations } = useAuth();
   const allRequests = useLoaderData();
   let initialRequests = allRequests.filter((r) => r.hrEmail === user.email);
 
@@ -43,7 +36,7 @@ const Request = () => {
 
   // --- Core HR Actions: Approval with Limit Enforcement & Auto-Affiliation ---
   const handleApprove = async (request) => {
-    let myAff = extraData.filter((aff) => aff.hrEmail === user.email);
+    let myAff = affiliations.filter((aff) => aff.hrEmail === user.email);
     console.log("myAff", myAff);
     let oldAff = myAff.find((aff) => aff.epEmail === request.epEmail);
     console.log("oldAff", oldAff);

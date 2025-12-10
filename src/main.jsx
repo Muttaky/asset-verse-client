@@ -27,7 +27,6 @@ import PrivateRoute from "./PrivateRoute";
 let router = createBrowserRouter([
   {
     path: "/",
-    loader: () => fetch("http://localhost:3000/users"),
     Component: Root,
     children: [
       {
@@ -103,7 +102,6 @@ let router = createBrowserRouter([
       },
       {
         path: "/assets",
-        loader: () => fetch("http://localhost:3000/assets"),
         element: (
           <PrivateRoute>
             <Assets></Assets>

@@ -1,12 +1,12 @@
 import React from "react";
 import { useForm } from "react-hook-form";
 import axios from "axios";
-import { useNavigate, useOutletContext } from "react-router";
+import { useNavigate } from "react-router";
 import { toast } from "react-toastify";
 import useAuth from "../useAuth";
 const AddAssets = () => {
-  let { user } = useAuth();
-  let { users } = useOutletContext();
+  let { user, users } = useAuth();
+
   let newUser = users.find((u) => u.email === user.email);
 
   const navigate = useNavigate();

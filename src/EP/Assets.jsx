@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { Link, useLoaderData } from "react-router";
 import { FaSearch, FaBoxes, FaPlusCircle, FaFilter } from "react-icons/fa";
 import { toast } from "react-toastify";
@@ -10,7 +10,25 @@ const Assets = () => {
   let { user } = useAuth();
   const navigate = useNavigate();
 
-  const initialAssets = useLoaderData();
+  const [assets, setAssets] = useState([]);
+  const [count, setCount] = useState(0);
+  const [page, setPage] = useState(0);
+  const [currentPage, setCurrentPage] = useState(0);
+  const limit = 6;
+  useEffect(() => {
+    fetch(
+      `http://localhost:3000/assets?limit=${limit}&skip=${currentPage * limit}`
+    )
+      .then((res) => res.json())
+      .then((data) => {
+        setAssets(data.result);
+        setCount(data.count);
+        const pages = Math.ceil(data.count / limit);
+        setPage(pages);
+      });
+  }, [currentPage]);
+
+  const initialAssets = assets;
   const [searchTerm, setSearchTerm] = useState("");
   const [filterType, setFilterType] = useState("All");
 
@@ -88,6 +106,7 @@ const Assets = () => {
               onChange={(e) => setSearchTerm(e.target.value)}
             />
           </label>
+          <span>Available asset = {count}</span>
         </div>
 
         {/* Filter by Type */}
@@ -171,6 +190,38 @@ const Assets = () => {
               No assets found matching your criteria.
             </p>
           </div>
+        )}
+      </div>
+      <div className="flex jutify-center flex-wrap gap-3 py-10">
+        {currentPage > 0 && (
+          <button
+            onClick={() => {
+              setCurrentPage(currentPage - 1);
+            }}
+            className="btn"
+          >
+            Prev
+          </button>
+        )}
+        {[...Array(page).keys()].map((i) => (
+          <button
+            onClick={() => {
+              setCurrentPage(i);
+            }}
+            className={`btn ${i === currentPage && "btn-primary"}`}
+          >
+            {i + 1}
+          </button>
+        ))}
+        {currentPage < page - 1 && (
+          <button
+            onClick={() => {
+              setCurrentPage(currentPage + 1);
+            }}
+            className="btn"
+          >
+            Next
+          </button>
         )}
       </div>
     </div>

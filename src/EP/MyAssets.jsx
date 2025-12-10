@@ -12,43 +12,17 @@ import {
   FaUserTag,
   FaClock,
 } from "react-icons/fa";
-
+import useAuth from "../useAuth";
 // Placeholder Data for Assets Assigned to the Employee
-const assignedAssets = [
-  {
-    id: 1,
-    name: "MacBook Pro M3",
-    serial: "M3-PRO-001",
-    type: "Returnable",
-    assignedOn: "2024-11-28",
-    returnDeadline: "N/A",
-  },
-  {
-    id: 2,
-    name: "Ergonomic Office Chair",
-    serial: "CHAIR-45A",
-    type: "Returnable",
-    assignedOn: "2024-11-25",
-    returnDeadline: "N/A",
-  },
-  {
-    id: 3,
-    name: "Company Swag T-Shirt (L)",
-    serial: "SWAG-TS-2024",
-    type: "Non-returnable",
-    assignedOn: "2024-11-20",
-    returnDeadline: "Permanent",
-  },
-];
 
 const MyAssets = () => {
+  let { user, assigneds } = useAuth();
+  let assignedAssets = assigneds.filter((a) => a.epEmail === user.email);
   const [assets, setAssets] = useState(assignedAssets);
   const [searchTerm, setSearchTerm] = useState("");
 
-  const filteredAssets = assets.filter(
-    (asset) =>
-      asset.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      asset.serial.toLowerCase().includes(searchTerm.toLowerCase())
+  const filteredAssets = assets.filter((asset) =>
+    asset.assetName.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
   // --- Core Employee Action: Initiate Asset Return ---
@@ -138,37 +112,37 @@ const MyAssets = () => {
           <tbody>
             {filteredAssets.length > 0 ? (
               filteredAssets.map((asset) => {
-                const Icon = getAssetIcon(asset.name);
+                const Icon = getAssetIcon(asset.assetName);
                 const isReturning = asset.isReturning;
 
                 return (
                   <tr
-                    key={asset.id}
+                    key={asset._id}
                     className="hover:bg-base-200/50 transition-colors duration-150"
                   >
                     <td>
                       <div className="flex items-center gap-3">
                         <Icon className="w-5 h-5 text-primary flex-shrink-0" />
-                        <div className="font-bold">{asset.name}</div>
+                        <div className="font-bold">{asset.assetName}</div>
                       </div>
                     </td>
                     <td className="font-mono text-sm opacity-50">
-                      {asset.serial}
+                      {asset._id}
                     </td>
                     <td>
                       <div
                         className={`badge ${
-                          asset.type === "Returnable"
+                          asset.assetType === "returnable"
                             ? "badge-info"
                             : "badge-secondary"
                         } text-white font-medium`}
                       >
-                        {asset.type}
+                        {asset.assetType}
                       </div>
                     </td>
-                    <td className="text-sm">{asset.assignedOn}</td>
+                    <td className="text-sm">{asset.assignmentDate}</td>
                     <td className="text-center">
-                      {asset.type === "Returnable" ? (
+                      {asset.assetType === "returnable" ? (
                         <button
                           onClick={() => handleInitiateReturn(asset.id)}
                           className={`btn btn-sm ${

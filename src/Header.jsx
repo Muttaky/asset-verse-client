@@ -2,8 +2,8 @@ import React from "react";
 import { Link } from "react-router";
 import useAuth from "./useAuth";
 
-const Header = ({ users }) => {
-  let { user, logOut } = useAuth();
+const Header = () => {
+  let { user, logOut, users } = useAuth();
   let newUser = users.find((u) => u.email === user?.email);
 
   let role = newUser?.role || "guest";

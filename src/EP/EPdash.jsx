@@ -1,17 +1,14 @@
 import React from "react";
 import { Link } from "react-router";
 import { FaBoxes, FaUserTag, FaClipboardList } from "react-icons/fa";
+import useAuth from "../useAuth";
 
 // Placeholder data for Employee context
-const employeeInfo = {
-  name: "Diana Prince",
-  email: "diana@assetverse.com",
-  currentCompany: "AssetVerse HQ",
-  totalAssetsAssigned: 2,
-  // userPhoto removed as the navbar is gone
-};
 
 const EPdash = () => {
+  let { user, users } = useAuth();
+
+  const employeeInfo = users.find((u) => u.email === user.email);
   // Removed: navLinks definition
   // Removed: handleLogout function
   // Removed: SidebarContent definition
@@ -22,7 +19,7 @@ const EPdash = () => {
       {/* Page Content: EMPLOYEE DASHBOARD HOME (Overview) */}
       <main className="flex-grow p-4 md:p-8">
         <h1 className="text-4xl font-bold text-secondary mb-6">
-          Welcome, {employeeInfo.name}!
+          Welcome, {user.displayName}!
         </h1>
         <p className="text-lg text-gray-600 mb-8">
           Quick overview of your assigned assets and requests.
