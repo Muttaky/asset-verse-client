@@ -13,15 +13,13 @@ import { toast } from "react-toastify";
 import useAuth from "../useAuth";
 // Placeholder Data for HR Manager's package status (MUST BE ENFORCED)
 // In a real application, this would be fetched from a global Auth/HR Context.
-const hrPackageStatus = {
-  currentEmployees: 4, // Simulating 4 out of 5 slots used
-  packageLimit: 5, // Default package limit
-};
 
 // Placeholder Data for Requests List (Simulating data fetched from a backend)
 
 const Request = () => {
-  let { user, affiliations } = useAuth();
+  let { user, affiliations, users } = useAuth();
+  let myAff = affiliations.filter((aff) => aff.hrEmail === user.email);
+  let currentUser = users.find((u) => u.email === user.email);
   const allRequests = useLoaderData();
   let initialRequests = allRequests.filter((r) => r.hrEmail === user.email);
 
@@ -36,10 +34,8 @@ const Request = () => {
 
   // --- Core HR Actions: Approval with Limit Enforcement & Auto-Affiliation ---
   const handleApprove = async (request) => {
-    let myAff = affiliations.filter((aff) => aff.hrEmail === user.email);
-    console.log("myAff", myAff);
     let oldAff = myAff.find((aff) => aff.epEmail === request.epEmail);
-    console.log("oldAff", oldAff);
+
     //DB start
     const today = new Date().toISOString().split("T")[0];
 
@@ -278,13 +274,25 @@ const Request = () => {
                     {request.status === "pending" ? (
                       <>
                         {/* Approve Button (Primary color) */}
-                        <button
-                          onClick={() => handleApprove(request)}
-                          className="btn btn-sm btn-primary transition-transform hover:scale-105"
-                          aria-label="Approve Request"
-                        >
-                          Approve
-                        </button>
+                        {currentUser.packageLimit <= myAff.length ? (
+                          <Link to="/pack">
+                            <button
+                              className="btn btn-sm btn-primary transition-transform hover:scale-105"
+                              aria-label="Approve Request"
+                            >
+                              Approve
+                            </button>
+                          </Link>
+                        ) : (
+                          <button
+                            onClick={() => handleApprove(request)}
+                            className="btn btn-sm btn-primary transition-transform hover:scale-105"
+                            aria-label="Approve Request"
+                          >
+                            Approve
+                          </button>
+                        )}
+
                         {/* Reject Button (Secondary/Error color) */}
                         <button
                           onClick={() => handleReject(request)}

@@ -14,6 +14,7 @@ import {
   Cell,
   LabelList,
 } from "recharts";
+import { Link } from "react-router";
 
 // Custom Colors for Charts (using DaisyUI theme placeholders)
 const PIE_COLORS = ["#0A676E", "#0D9488", "#1E40AF", "#9333EA", "#F59E0B"];
@@ -76,9 +77,9 @@ const HRdash = () => {
             </div>
             <div className="stat-desc">
               {currentEP >= packageLimit ? (
-                <span className="text-error font-bold">
+                <Link to="/pack" className="text-error font-bold btn ">
                   Limit Reached. Upgrade Now!
-                </span>
+                </Link>
               ) : (
                 `You have ${slotsRemaining} slots remaining.`
               )}

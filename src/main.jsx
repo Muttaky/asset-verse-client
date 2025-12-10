@@ -23,6 +23,7 @@ import MyRequest from "./EP/MyRequest";
 import MyProfile from "./EP/MyProfile";
 import AuthProvider from "./AuthProvider";
 import PrivateRoute from "./PrivateRoute";
+import Packages from "./HR/Packages";
 
 let router = createBrowserRouter([
   {
@@ -138,6 +139,14 @@ let router = createBrowserRouter([
         element: (
           <PrivateRoute>
             <MyProfile></MyProfile>
+          </PrivateRoute>
+        ),
+      },
+      {
+        path: "/pack",
+        element: (
+          <PrivateRoute>
+            <Packages></Packages>
           </PrivateRoute>
         ),
       },
