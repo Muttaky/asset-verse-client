@@ -24,6 +24,7 @@ import MyProfile from "./EP/MyProfile";
 import AuthProvider from "./AuthProvider";
 import PrivateRoute from "./PrivateRoute";
 import Packages from "./HR/Packages";
+import UpgradeSuccess from "./HR/UpgradeSuccess";
 
 let router = createBrowserRouter([
   {
@@ -148,6 +149,14 @@ let router = createBrowserRouter([
         element: (
           <PrivateRoute>
             <Packages></Packages>
+          </PrivateRoute>
+        ),
+      },
+      {
+        path: "/upgrade-success",
+        element: (
+          <PrivateRoute>
+            <UpgradeSuccess></UpgradeSuccess>
           </PrivateRoute>
         ),
       },

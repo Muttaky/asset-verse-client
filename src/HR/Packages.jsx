@@ -1,8 +1,40 @@
 import React from "react";
-import { Link, useLoaderData } from "react-router";
+import { Link, useLoaderData } from "react-router"; // Assuming useLoaderData and Link are from react-router-dom
+import useAuth from "../useAuth"; // Assuming your authentication hook
 
 const Packages = () => {
   let packagesData = useLoaderData();
+  const { user } = useAuth(); // Get current HR user
+
+  const handleCheckout = (pkg) => {
+    // Collect data needed for Stripe checkout
+    const paymentInfo = {
+      packageName: pkg.name,
+      price: pkg.price, // Assumes price is in USD
+      employeeLimit: pkg.employeeLimit,
+      hrEmail: user.email, // Use the logged-in user's email
+    };
+
+    fetch(`http://localhost:3000/create-checkout-session`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(paymentInfo),
+    })
+      .then((res) => res.json())
+      .then((data) => {
+        if (data.url) {
+          // Redirect to Stripe Checkout page
+          window.location.replace(data.url);
+        }
+      })
+      .catch((error) => {
+        console.error("Stripe Checkout Error:", error);
+        alert("Could not initiate payment. Please try again.");
+      });
+  };
+
   return (
     <div>
       <section id="packages" className="py-20 bg-base-200">
@@ -19,7 +51,9 @@ const Packages = () => {
               <div
                 key={pkg._id}
                 className={`card shadow-2xl p-8 flex flex-col justify-between 
-                  bg-base-200
+                  bg-base-100 ${
+                    pkg.isRecommended ? "border-4 border-secondary" : ""
+                  }
                 `}
               >
                 <div>
@@ -27,7 +61,7 @@ const Packages = () => {
                     {pkg.name}
                   </h3>
                   {pkg.isRecommended && (
-                    <div className="badge badge-primary mb-4 text-white">
+                    <div className="badge badge-secondary mb-4 text-white">
                       Most Popular
                     </div>
                   )}
@@ -53,6 +87,7 @@ const Packages = () => {
                         key={fIndex}
                         className="flex items-center text-gray-700"
                       >
+                        {/* Checkmark SVG */}
                         <svg
                           className="h-5 w-5 mr-3 text-primary"
                           fill="none"
@@ -71,13 +106,24 @@ const Packages = () => {
                     ))}
                   </ul>
                 </div>
-                {pkg.name !== "Basic" && (
+
+                {/* Conditional Purchase Button */}
+                {pkg.price === 0 ? (
+                  // Free Basic Package (Link/Button for HR sign-up)
                   <Link
                     to="/join-hr"
-                    className={`btn btn-secondary} btn-block mt-6 transition-transform duration-300 hover:scale-105`}
+                    className={`btn btn-primary btn-block mt-6 transition-transform duration-300 hover:scale-105`}
                   >
                     Start with {pkg.name}
                   </Link>
+                ) : (
+                  // Paid Package (Stripe Checkout Handler)
+                  <button
+                    onClick={() => handleCheckout(pkg)}
+                    className={`btn btn-secondary btn-block mt-6 transition-transform duration-300 hover:scale-105`}
+                  >
+                    Upgrade to {pkg.name}
+                  </button>
                 )}
               </div>
             ))}
