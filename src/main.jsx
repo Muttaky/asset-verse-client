@@ -144,6 +144,7 @@ let router = createBrowserRouter([
       },
       {
         path: "/pack",
+        loader: () => fetch("http://localhost:3000/packages"),
         element: (
           <PrivateRoute>
             <Packages></Packages>

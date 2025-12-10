@@ -196,7 +196,7 @@ const Home = () => {
                 </div>
 
                 <Link
-                  to="/join-hr"
+                  to="/pack"
                   className={`btn btn-secondary} btn-block mt-6 transition-transform duration-300 hover:scale-105`}
                 >
                   Start with {pkg.name}
