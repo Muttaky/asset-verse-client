@@ -45,13 +45,16 @@ const AuthProvider = ({ children }) => {
       .then((res) => res.json())
       .then((data) => setAffiliations(data));
   }, []);
-  const [assets, setAssets] = useState([]);
+
+  const [asset, setAssets] = useState([]);
 
   useEffect(() => {
     fetch("http://localhost:3000/assets")
       .then((res) => res.json())
       .then((data) => setAssets(data));
   }, []);
+  let assets = asset.result;
+
   const [assigneds, setAssigneds] = useState([]);
 
   useEffect(() => {

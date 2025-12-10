@@ -7,11 +7,15 @@ import {
   FaPlusCircle,
   FaFilter,
 } from "react-icons/fa";
+import useAuth from "../useAuth";
 
 // Placeholder Data for Assets List (Simulating data fetched from a backend)
 
 const AssetsList = () => {
-  const initialAssets = useLoaderData();
+  let { user } = useAuth();
+  const Assets = useLoaderData();
+  let alAssets = Assets.result;
+  let initialAssets = alAssets.filter((a) => a.email === user.email);
   const [searchTerm, setSearchTerm] = useState("");
 
   // Filter assets based on search term (case-insensitive)

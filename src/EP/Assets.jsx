@@ -1,5 +1,4 @@
 import React, { useEffect, useState } from "react";
-import { Link, useLoaderData } from "react-router";
 import { FaSearch, FaBoxes, FaPlusCircle, FaFilter } from "react-icons/fa";
 import { toast } from "react-toastify";
 import useAuth from "../useAuth";
@@ -22,7 +21,7 @@ const Assets = () => {
       .then((res) => res.json())
       .then((data) => {
         setAssets(data.result);
-        setCount(data.count);
+        setCount(data.result.length);
         const pages = Math.ceil(data.count / limit);
         setPage(pages);
       });
