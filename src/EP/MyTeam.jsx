@@ -7,44 +7,14 @@ import {
   FaSearch,
   FaBriefcase,
 } from "react-icons/fa";
+import useAuth from "../useAuth";
 
 // Placeholder Data for Team Members (Affiliated employees in the same company)
-const initialTeamMembers = [
-  {
-    id: 1,
-    name: "Alice Johnson",
-    email: "alice@company.com",
-    role: "Frontend Developer",
-    team: "Development",
-    assets: 3,
-  },
-  {
-    id: 2,
-    name: "Bob Kellar",
-    email: "bob@company.com",
-    role: "Backend Engineer",
-    team: "Development",
-    assets: 1,
-  },
-  {
-    id: 3,
-    name: "Eve Barton",
-    email: "eve@company.com",
-    role: "Product Manager",
-    team: "Product",
-    assets: 0,
-  },
-  {
-    id: 4,
-    name: "Mark Wilson",
-    email: "mark@company.com",
-    role: "UX Designer",
-    team: "Design",
-    assets: 2,
-  },
-];
 
 const MyTeam = () => {
+  let { user, affiliations } = useAuth();
+  let myAff = affiliations.filter((u) => u.epEmail === user.email);
+  const initialTeamMembers = myAff;
   const [searchTerm, setSearchTerm] = useState("");
   const [filterTeam, setFilterTeam] = useState("All");
 
@@ -53,8 +23,8 @@ const MyTeam = () => {
   // Filter members based on search term and team filter
   const filteredMembers = initialTeamMembers.filter((member) => {
     const matchesSearch =
-      member.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      member.email.toLowerCase().includes(searchTerm.toLowerCase());
+      member.companyName.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      member.hrEmail.toLowerCase().includes(searchTerm.toLowerCase());
     const matchesTeam = filterTeam === "All" || member.team === filterTeam;
     return matchesSearch && matchesTeam;
   });
@@ -106,15 +76,14 @@ const MyTeam = () => {
         {filteredMembers.length > 0 ? (
           filteredMembers.map((member) => (
             <div
-              key={member.id}
+              key={member._id}
               className="card bg-base-100 shadow-xl border-t-4 border-primary hover:shadow-2xl transition-shadow duration-300"
             >
               <div className="card-body items-center text-center p-6">
-                {/* Avatar Placeholder */}
-                <FaUserCircle className="w-16 h-16 text-primary mb-3" />
+                <img className="w-16 h-16" src={member.hrPhoto} alt="" />
 
                 <h2 className="card-title text-secondary text-lg">
-                  {member.name}
+                  {member.companyName}
                 </h2>
                 <p className="text-sm font-medium text-gray-600 mb-2">
                   {member.role}
@@ -123,21 +92,18 @@ const MyTeam = () => {
                 <div className="flex flex-col items-start w-full text-left space-y-1 mt-2">
                   <div className="text-sm flex items-center gap-2 text-base-content">
                     <FaEnvelope className="w-4 h-4 text-primary opacity-80" />{" "}
-                    {member.email}
+                    {member.hrEmail}
                   </div>
                   <div className="text-sm flex items-center gap-2 text-base-content">
-                    <FaTag className="w-4 h-4 text-primary opacity-80" /> Team:
-                    **{member.team}**
-                  </div>
-                  <div className="text-xs text-info font-bold mt-1">
-                    Assigned Assets: {member.assets}
+                    <FaTag className="w-4 h-4 text-primary opacity-80" />
+                    {member.affiliationDate}
                   </div>
                 </div>
 
                 <div className="card-actions justify-end mt-4 w-full">
                   {/* Action button (e.g., Send Message, View Contact) */}
                   <a
-                    href={`mailto:${member.email}`}
+                    href={`mailto:${member.hrEmail}`}
                     className="btn btn-sm btn-outline btn-primary btn-block"
                   >
                     Contact Colleague

@@ -201,7 +201,7 @@ const Header = () => {
           <>
             {" "}
             <div className="navbar-end">
-              <Link to="/login" className="btn">
+              <Link to="/login" className="btn btn-primary">
                 Login
               </Link>
             </div>
