@@ -12,18 +12,13 @@ import { Link } from "react-router";
 import useAuth from "../useAuth";
 
 // Placeholder data for the HR Manager's profile and company status
-const initialProfile = {
-  name: "HR Manager Smith",
-  email: "hr.smith@assetversehq.com",
-  companyName: "AssetVerse HQ",
-  userPhoto: "https://i.ibb.co/L84m447/default-profile.jpg",
-  package: "Standard",
-  employeeCount: 7,
-  employeeLimit: 10,
-  joinDate: "2023-10-01",
-};
 
 const Profile = () => {
+  let { users, user, affiliations } = useAuth();
+  let myAff = affiliations.filter((a) => a.hrEmail === user.email);
+  let currentEP = myAff.length;
+  let currentUser = users.find((u) => u.email === user.email);
+  const initialProfile = currentUser;
   const [profile, setProfile] = useState(initialProfile);
   const [isEditing, setIsEditing] = useState(false);
   const [formData, setFormData] = useState(initialProfile);
@@ -54,7 +49,6 @@ const Profile = () => {
       ? "bg-error text-white"
       : "bg-success text-white";
 
-  let { user } = useAuth();
   return (
     <div className="p-4 md:p-8">
       <h1 className="text-3xl font-bold text-secondary mb-2 flex items-center gap-3">
@@ -93,11 +87,10 @@ const Profile = () => {
               className={`card shadow-lg w-full max-w-xs p-4 text-center ${employeeStatusColor}`}
             >
               <div className="font-bold text-lg mb-1">
-                {profile.package} Package
+                {profile.subscribtion} Package
               </div>
               <div className="text-sm">
-                {profile.employeeCount} / {profile.employeeLimit} Employee Slots
-                Used
+                {currentEP} / {profile.packageLimit} Employee Slots Used
               </div>
               {profile.employeeCount >= profile.employeeLimit && (
                 <Link
@@ -126,7 +119,7 @@ const Profile = () => {
                 />
                 <ProfileDetail
                   label="Current Package"
-                  value={profile.package}
+                  value={profile.subscribtion}
                   icon={FaTag}
                 />
               </div>
