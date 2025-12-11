@@ -15,19 +15,12 @@ import { Link } from "react-router";
 import useAuth from "../useAuth";
 
 // Placeholder data for the Employee's profile and company status
-const initialProfile = {
-  name: "Diana Prince",
-  email: "diana.prince@assetverse.com",
-  companyName: "AssetVerse HQ",
-  userPhoto:
-    "https://images.unsplash.com/photo-1534528741775-53994a69daeb?q=80&w=2670&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
-  employeeId: "EMP-004",
-  team: "Development",
-  assignedAssets: 2,
-  affiliationDate: "2024-11-15",
-};
 
 const MyProfile = () => {
+  let { user, affiliations } = useAuth();
+
+  let myAff = affiliations.find((u) => u.epEmail === user.email);
+  const initialProfile = myAff;
   const [profile, setProfile] = useState(initialProfile);
   const [isEditing, setIsEditing] = useState(false);
   const [formData, setFormData] = useState(initialProfile);
@@ -52,7 +45,7 @@ const MyProfile = () => {
       alert("Profile updated successfully!");
     }, 1500);
   };
-  let { user } = useAuth();
+
   return (
     <div className="p-4 md:p-8">
       <h1 className="text-3xl font-bold text-primary mb-2 flex items-center gap-3">
@@ -128,7 +121,7 @@ const MyProfile = () => {
                 />
                 <ProfileDetail
                   label="Employee ID"
-                  value={profile.employeeId}
+                  value={profile._id}
                   icon={FaTag}
                 />
               </div>

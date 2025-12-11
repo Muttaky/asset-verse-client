@@ -85,7 +85,8 @@ const Assets = () => {
   return (
     <div className="p-4 md:p-8 bg-base-100 rounded-xl shadow-lg">
       <h1 className="text-3xl font-bold text-primary mb-2 flex items-center gap-3">
-        <FaBoxes className="text-secondary" /> Company Asset Inventory
+        <FaBoxes className="text-secondary" />
+        All Company Asset Inventory
       </h1>
       <p className="text-gray-500 mb-6">
         Browse all available assets and submit a request to your HR Manager.
@@ -105,7 +106,6 @@ const Assets = () => {
               onChange={(e) => setSearchTerm(e.target.value)}
             />
           </label>
-          <span>Available asset = {count}</span>
         </div>
 
         {/* Filter by Type */}
@@ -159,7 +159,7 @@ const Assets = () => {
                         asset.isAvailable ? "text-success" : "text-error"
                       }`}
                     >
-                      {asset.availableQuantity} / {asset.quantity}
+                      {/* {asset.availableQuantity} / {asset.quantity} */}
                     </span>
                   </div>
                   {/* Status Badge */}
