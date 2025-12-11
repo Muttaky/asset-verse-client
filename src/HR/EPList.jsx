@@ -14,9 +14,10 @@ import { toast } from "react-toastify";
 // Placeholder Data for Employee List (Simulating data affiliated after first asset approval)
 
 const EPList = () => {
-  let { user, affiliations } = useAuth();
+  let { user, affiliations, assigneds } = useAuth();
   const allEmployees = affiliations;
   let initialEmployees = allEmployees.filter((e) => e.hrEmail === user.email);
+  let myAssi = assigneds.filter((s) => s.hrEmail === user.email);
   const [searchTerm, setSearchTerm] = useState("");
   const [employees, setEmployees] = useState(initialEmployees); // State for handling status changes
 
@@ -134,42 +135,45 @@ const EPList = () => {
           {/* Table Body */}
           <tbody>
             {filteredEmployees.length > 0 ? (
-              filteredEmployees.map((employee) => (
-                <tr
-                  key={employee.id}
-                  className="hover:bg-base-200/50 transition-colors duration-150"
-                >
-                  <td className="font-bold">{employee.epName}</td>
-                  <td className="text-sm opacity-80">{employee.epEmail}</td>
-                  <td className="text-center">
-                    <div
-                      className={`badge ${
-                        employee.status === "Active"
-                          ? "badge-success"
-                          : "badge-warning"
-                      } text-white`}
-                    >
-                      {employee.status}
-                    </div>
-                  </td>
-                  <td className="text-center text-secondary font-semibold">
-                    {employee.assets}
-                  </td>
-                  <td>{employee.affiliationDate}</td>
-                  <td className="flex justify-center space-x-2">
-                    {/* View Assets Button (Placeholder for routing to detailed employee view) */}
+              filteredEmployees.map((employee) => {
+                let aas = myAssi.filter((m) => employee.epEmail === m.epEmail);
+                return (
+                  <tr
+                    key={employee.id}
+                    className="hover:bg-base-200/50 transition-colors duration-150"
+                  >
+                    <td className="font-bold">{employee.epName}</td>
+                    <td className="text-sm opacity-80">{employee.epEmail}</td>
+                    <td className="text-center">
+                      <div
+                        className={`badge ${
+                          employee.status === "Active"
+                            ? "badge-success"
+                            : "badge-warning"
+                        } text-white`}
+                      >
+                        {employee.status}
+                      </div>
+                    </td>
+                    <td className="text-center text-secondary font-semibold">
+                      {aas.length}
+                    </td>
+                    <td>{employee.affiliationDate}</td>
+                    <td className="flex justify-center space-x-2">
+                      {/* View Assets Button (Placeholder for routing to detailed employee view) */}
 
-                    {/* Remove Employee Button (Error/Danger color) */}
-                    <button
-                      onClick={() => handleRemoveEmployee(employee)}
-                      className="btn btn-sm btn-error btn-square transition-transform hover:scale-105"
-                      aria-label="Remove Employee Affiliation"
-                    >
-                      <FaMinusCircle className="w-4 h-4" />
-                    </button>
-                  </td>
-                </tr>
-              ))
+                      {/* Remove Employee Button (Error/Danger color) */}
+                      <button
+                        onClick={() => handleRemoveEmployee(employee)}
+                        className="btn btn-sm btn-error btn-square transition-transform hover:scale-105"
+                        aria-label="Remove Employee Affiliation"
+                      >
+                        <FaMinusCircle className="w-4 h-4" />
+                      </button>
+                    </td>
+                  </tr>
+                );
+              })
             ) : (
               <tr>
                 <td
