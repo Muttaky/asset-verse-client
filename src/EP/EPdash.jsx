@@ -6,8 +6,14 @@ import useAuth from "../useAuth";
 // Placeholder data for Employee context
 
 const EPdash = () => {
-  let { user, users } = useAuth();
-
+  let { user, users, assigneds, assets, requests } = useAuth();
+  let asset = assets.length;
+  let myAssi = assigneds.filter((a) => a.epEmail === user.email);
+  let myRequ = requests.filter(
+    (a) => a.epEmail === user.email && a.status === "pending"
+  );
+  let requ = myRequ.length;
+  let myAssin = myAssi.length;
   const employeeInfo = users.find((u) => u.email === user.email);
   // Removed: navLinks definition
   // Removed: handleLogout function
@@ -34,9 +40,7 @@ const EPdash = () => {
             <div className="stat-title text-primary-content opacity-70">
               Assets Assigned
             </div>
-            <div className="stat-value text-3xl">
-              {employeeInfo.totalAssetsAssigned}
-            </div>
+            <div className="stat-value text-3xl">{myAssin}</div>
             <div className="stat-desc text-primary-content opacity-90">
               <Link to="/my-assets" className="underline hover:no-underline">
                 View My Assets
@@ -48,8 +52,8 @@ const EPdash = () => {
             <div className="stat-figure text-secondary">
               <FaClipboardList className="w-6 h-6" />
             </div>
-            <div className="stat-title">Pending Requests (Placeholder)</div>
-            <div className="stat-value text-secondary">1</div>
+            <div className="stat-title">Pending Requests</div>
+            <div className="stat-value text-secondary">{requ}</div>
             <div className="stat-desc">
               <Link to="/my-request" className="link link-hover text-secondary">
                 Track Requests
@@ -61,8 +65,8 @@ const EPdash = () => {
             <div className="stat-figure text-info">
               <FaBoxes className="w-6 h-6" />
             </div>
-            <div className="stat-title">Available Inventory (Placeholder)</div>
-            <div className="stat-value text-info">60+ items</div>
+            <div className="stat-title">Available Inventory</div>
+            <div className="stat-value text-info">{asset}=items</div>
             <div className="stat-desc">
               <Link to="/assets" className="link link-hover text-info">
                 Browse Inventory
