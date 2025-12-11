@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { Link, useLoaderData } from "react-router";
+import { Link } from "react-router";
 import {
   FaEdit,
   FaTrash,
@@ -12,10 +12,12 @@ import useAuth from "../useAuth";
 // Placeholder Data for Assets List (Simulating data fetched from a backend)
 
 const AssetsList = () => {
-  let { user } = useAuth();
-  const Assets = useLoaderData();
-  let alAssets = Assets.result;
-  let initialAssets = alAssets.filter((a) => a.email === user.email);
+  let { user, assets, loading } = useAuth();
+  if (loading || !user) {
+    return <p>Loading assets...</p>;
+  }
+
+  let initialAssets = assets.filter((a) => a.email === user.email);
   const [searchTerm, setSearchTerm] = useState("");
 
   // Filter assets based on search term (case-insensitive)

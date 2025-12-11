@@ -1,5 +1,5 @@
 import React from "react";
-import { Link, useLoaderData } from "react-router";
+import { Link } from "react-router";
 import useAuth from "./useAuth";
 
 // Using react-icons for professional, consistent iconography
@@ -44,8 +44,8 @@ const benefitsData = [
 ];
 
 const Home = () => {
-  let { user } = useAuth();
-  const packagesData = useLoaderData();
+  let { user, packages } = useAuth();
+  const packagesData = packages;
 
   return (
     <div className="min-h-screen">

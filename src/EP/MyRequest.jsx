@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { Link, useLoaderData } from "react-router";
+import { Link } from "react-router";
 import {
   FaClipboardList,
   FaClock,
@@ -14,14 +14,14 @@ import useAuth from "../useAuth";
 // Placeholder Data for Employee's Asset Requests
 
 const MyRequest = () => {
-  let { user } = useAuth();
-  const allRequests = useLoaderData();
+  let { user, requests } = useAuth();
+  const allRequests = requests;
   let initialRequests = allRequests.filter((r) => r.epEmail === user.email);
 
-  const [requests, setRequests] = useState(initialRequests);
+  const [requestss, setRequests] = useState(initialRequests);
   const [searchTerm, setSearchTerm] = useState("");
 
-  const filteredRequests = requests.filter((request) =>
+  const filteredRequests = requestss.filter((request) =>
     request.assetName.toLowerCase().includes(searchTerm.toLowerCase())
   );
 

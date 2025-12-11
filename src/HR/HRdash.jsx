@@ -26,7 +26,9 @@ const HRdash = () => {
   let myAff = affiliations.filter((a) => a.hrEmail === user.email);
   let myAssets = assets.filter((a) => a.email === user.email);
   let myAssign = assigneds.filter((a) => a.hrEmail === user.email);
-  let myReq = requests.filter((r) => r.hrEmail === user.email);
+  let myReq = requests.filter(
+    (r) => r.hrEmail === user.email && r.status === "pending"
+  );
 
   // --- 1. Top 5 Requested Assets Data (for Bar Chart) ---
   let countMap = {};
@@ -101,7 +103,9 @@ const HRdash = () => {
             </div>
             <div className="stat-title text-base">Pending Requests</div>
             <div className="stat-value">{myReq.length}</div>
-            <div className="stat-desc text-accent">View all requests</div>
+            <Link to="/request" className="stat-desc text-accent">
+              View all requests
+            </Link>
           </div>
         </div>
 

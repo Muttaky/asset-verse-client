@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { Link, useLoaderData } from "react-router";
+import { Link } from "react-router";
 import {
   FaUsers,
   FaSearch,
@@ -14,8 +14,8 @@ import { toast } from "react-toastify";
 // Placeholder Data for Employee List (Simulating data affiliated after first asset approval)
 
 const EPList = () => {
-  let { user } = useAuth();
-  const allEmployees = useLoaderData();
+  let { user, affiliations } = useAuth();
+  const allEmployees = affiliations;
   let initialEmployees = allEmployees.filter((e) => e.hrEmail === user.email);
   const [searchTerm, setSearchTerm] = useState("");
   const [employees, setEmployees] = useState(initialEmployees); // State for handling status changes

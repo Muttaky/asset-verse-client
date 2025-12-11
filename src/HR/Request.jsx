@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
 import { Link, useLoaderData } from "react-router";
 import {
   FaCheckCircle,
@@ -17,17 +17,17 @@ import useAuth from "../useAuth";
 // Placeholder Data for Requests List (Simulating data fetched from a backend)
 
 const Request = () => {
-  let { user, affiliations, users } = useAuth();
+  let { user, affiliations, users, requests } = useAuth();
   let myAff = affiliations.filter((aff) => aff.hrEmail === user.email);
   let currentUser = users.find((u) => u.email === user.email);
-  const allRequests = useLoaderData();
+  const allRequests = requests;
   let initialRequests = allRequests.filter((r) => r.hrEmail === user.email);
 
   const [filterStatus, setFilterStatus] = useState("All");
-  const [requests, setRequests] = useState(initialRequests);
+  const [requestss, setRequests] = useState(initialRequests);
 
   // Filter requests based on selected status
-  const filteredRequests = requests.filter((request) => {
+  const filteredRequests = requestss.filter((request) => {
     if (filterStatus === "All") return true;
     return request.status === filterStatus;
   });

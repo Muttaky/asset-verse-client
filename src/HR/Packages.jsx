@@ -1,11 +1,10 @@
 import React from "react";
-import { Link, useLoaderData } from "react-router"; // Assuming useLoaderData and Link are from react-router-dom
+import { Link } from "react-router"; // Assuming useLoaderData and Link are from react-router-dom
 import useAuth from "../useAuth"; // Assuming your authentication hook
 
 const Packages = () => {
-  let packagesData = useLoaderData();
-  const { user } = useAuth(); // Get current HR user
-
+  const { user, packages } = useAuth(); // Get current HR user
+  let packagesData = packages;
   const handleCheckout = (pkg) => {
     // Collect data needed for Stripe checkout
     const paymentInfo = {
