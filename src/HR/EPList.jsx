@@ -158,13 +158,7 @@ const EPList = () => {
                   <td>{employee.affiliationDate}</td>
                   <td className="flex justify-center space-x-2">
                     {/* View Assets Button (Placeholder for routing to detailed employee view) */}
-                    <Link
-                      to={`/employee-details/${employee.id}`}
-                      className="btn btn-sm btn-info btn-square transition-transform hover:scale-105"
-                      aria-label="View Assigned Assets"
-                    >
-                      <FaEye className="w-4 h-4" />
-                    </Link>
+
                     {/* Remove Employee Button (Error/Danger color) */}
                     <button
                       onClick={() => handleRemoveEmployee(employee)}
