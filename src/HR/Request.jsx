@@ -205,7 +205,7 @@ const Request = () => {
         </div>
 
         <div className="tabs tabs-boxed">
-          {["All", "Pending", "Approved", "Rejected"].map((status) => (
+          {["All", "pending", "approved", "rejected"].map((status) => (
             <a
               key={status}
               onClick={() => setFilterStatus(status)}
@@ -223,9 +223,7 @@ const Request = () => {
         <button
           className="btn btn-ghost btn-circle text-primary"
           onClick={() => setRequests(initialRequests)}
-        >
-          <FaSync />
-        </button>
+        ></button>
       </div>
 
       {/* Requests Table (Responsive) */}
