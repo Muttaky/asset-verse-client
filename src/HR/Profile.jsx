@@ -86,9 +86,7 @@ const Profile = () => {
             <div
               className={`card shadow-lg w-full max-w-xs p-4 text-center ${employeeStatusColor}`}
             >
-              <div className="font-bold text-lg mb-1">
-                {profile.subscribtion} Package
-              </div>
+              <div className="font-bold text-lg mb-1">subscribtion Package</div>
               <div className="text-sm">
                 {currentEP} / {profile.packageLimit} Employee Slots Used
               </div>
@@ -118,8 +116,8 @@ const Profile = () => {
                   icon={FaBuilding}
                 />
                 <ProfileDetail
-                  label="Current Package"
-                  value={profile.subscribtion}
+                  label="CtratedAt"
+                  value={profile.createdAt}
                   icon={FaTag}
                 />
               </div>
