@@ -1,5 +1,5 @@
-AssetVerse
-💡 Project Purpose
+
+💡 
 AssetVerse is a comprehensive B2B (Business-to-Business) HR & Corporate Asset Management Web Application. It helps companies efficiently manage their physical assets, track inventory, and streamline the asset assignment and return processes.
 
 
