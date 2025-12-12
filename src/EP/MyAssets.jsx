@@ -1,6 +1,5 @@
-import React, { useState } from "react";
+import React, { useEffect, useState, useCallback } from "react";
 import { Link } from "react-router";
-// Corrected imports, including FaUserTag
 import {
   FaLaptop,
   FaChair,
@@ -11,74 +10,134 @@ import {
   FaSearch,
   FaUserTag,
   FaClock,
+  FaSync,
 } from "react-icons/fa";
+import { toast } from "react-toastify";
 import useAuth from "../useAuth";
-// Placeholder Data for Assets Assigned to the Employee
+import useAxiosSecure from "../useAxiosSecure";
 
 const MyAssets = () => {
-  let { user, assigneds } = useAuth();
-  let assignedAssets = assigneds.filter((a) => a.epEmail === user.email);
-  const [assets, setAssets] = useState(assignedAssets);
+  const { user } = useAuth();
+  const axiosSecure = useAxiosSecure();
+
+  const [assets, setAssets] = useState([]);
   const [searchTerm, setSearchTerm] = useState("");
+  const [loading, setLoading] = useState(true);
+  const [submitting, setSubmitting] = useState(false);
+
+  const fetchAssignedAssets = useCallback(async () => {
+    if (!user?.email) {
+      setLoading(false);
+      return;
+    }
+    setLoading(true);
+    try {
+      const response = await axiosSecure.get(`/assigneds?email=${user.email}`);
+      setAssets(response.data);
+    } catch (error) {
+      console.error("Error fetching assigned assets:", error);
+      toast.error("Failed to load your assigned assets.");
+    } finally {
+      setLoading(false);
+    }
+  }, [user, axiosSecure]);
+
+  useEffect(() => {
+    fetchAssignedAssets();
+  }, [fetchAssignedAssets]);
 
   const filteredAssets = assets.filter((asset) =>
     asset.assetName.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
-  // --- Core Employee Action: Initiate Asset Return ---
-  const handleInitiateReturn = (id) => {
-    const asset = assets.find((a) => a.id === id);
-    if (!asset || asset.type !== "Returnable") return;
+  const handleInitiateReturn = async (asset) => {
+    if (asset.assetType !== "returnable" || asset.status === "Return Pending")
+      return;
 
     if (
-      window.confirm(
-        `Are you sure you want to initiate the return process for "${asset.name}"? HR will be notified.`
+      !window.confirm(
+        `Are you sure you want to initiate the return process for "${asset.assetName}"? HR will be notified.`
       )
     ) {
-      // --- Placeholder for API Call to Create Return Request ---
-      console.log(`Initiating return request for asset ID: ${id}`);
+      return;
+    }
 
-      // Update state to show return initiated status (simulated)
-      setAssets(
-        assets.map((a) =>
-          a.id === id
-            ? { ...a, status: "Return Pending", isReturning: true }
-            : a
-        )
-      );
-      alert(
-        `Return request for ${asset.name} submitted successfully. Please await instructions from HR.`
-      );
+    setSubmitting(true);
+
+    const returnRequest = {
+      assignedAssetId: asset._id,
+      assetId: asset.assetId,
+      assetName: asset.assetName,
+      assetType: asset.assetType,
+      epEmail: user.email,
+      hrEmail: asset.hrEmail,
+      requestDate: new Date().toISOString().split("T")[0],
+      returnStatus: "Return Pending",
+    };
+
+    try {
+      const returnRes = await axiosSecure.post("/returns", returnRequest);
+
+      if (returnRes.data.insertedId) {
+        toast.success(
+          `Return request for ${asset.assetName} submitted successfully.`
+        );
+        setAssets(
+          assets.map((a) =>
+            a._id === asset._id ? { ...a, status: "Return Pending" } : a
+          )
+        );
+      } else {
+        toast.error("Return submission failed on the server.");
+      }
+    } catch (error) {
+      console.error("API Error during return initiation:", error);
+      toast.error("An error occurred while submitting the return request.");
+    } finally {
+      setSubmitting(false);
     }
   };
 
-  // Helper to get icon based on asset name/type
   const getAssetIcon = (name) => {
     if (
       name.toLowerCase().includes("macbook") ||
-      name.toLowerCase().includes("laptop")
+      name.toLowerCase().includes("laptop") ||
+      name.toLowerCase().includes("pc")
     )
       return FaLaptop;
-    if (name.toLowerCase().includes("chair")) return FaChair;
+    if (
+      name.toLowerCase().includes("chair") ||
+      name.toLowerCase().includes("desk")
+    )
+      return FaChair;
     if (
       name.toLowerCase().includes("t-shirt") ||
-      name.toLowerCase().includes("swag")
+      name.toLowerCase().includes("swag") ||
+      name.toLowerCase().includes("hoodie")
     )
       return FaTshirt;
     return FaTag;
   };
 
+  if (loading) {
+    return (
+      <div className="p-8 flex justify-center items-center min-h-[50vh]">
+        <FaSync className="animate-spin text-primary text-4xl mr-3" />
+        <p className="text-xl text-gray-600">Loading your assigned assets...</p>
+      </div>
+    );
+  }
+
   return (
     <div className="p-4 md:p-8 bg-base-100 rounded-xl shadow-lg">
       <h1 className="text-3xl font-bold text-primary mb-2 flex items-center gap-3">
-        {/* FaUserTag is now correctly imported */}
         <FaUserTag className="text-secondary" /> My Assigned Assets
       </h1>
+
       <p className="text-gray-500 mb-6">
         A list of all equipment currently assigned to you by the company.
       </p>
 
-      {/* Control Panel: Search */}
       <div className="flex justify-between items-center mb-6">
         <div className="form-control w-full md:w-1/3">
           <label className="input input-bordered flex items-center gap-2 bg-base-200">
@@ -94,10 +153,8 @@ const MyAssets = () => {
         </div>
       </div>
 
-      {/* Assets Table (Responsive) */}
       <div className="overflow-x-auto bg-base-100 rounded-lg border border-base-300">
         <table className="table table-zebra w-full">
-          {/* Table Header */}
           <thead className="bg-base-200 text-secondary">
             <tr>
               <th className="font-semibold text-base">Asset</th>
@@ -108,12 +165,11 @@ const MyAssets = () => {
             </tr>
           </thead>
 
-          {/* Table Body */}
           <tbody>
             {filteredAssets.length > 0 ? (
               filteredAssets.map((asset) => {
                 const Icon = getAssetIcon(asset.assetName);
-                const isReturning = asset.isReturning;
+                const isReturning = asset.status === "Return Pending";
 
                 return (
                   <tr
@@ -126,9 +182,11 @@ const MyAssets = () => {
                         <div className="font-bold">{asset.assetName}</div>
                       </div>
                     </td>
-                    <td className="font-mono text-sm opacity-50">
-                      {asset._id}
+
+                    <td className="font-mono text-xs opacity-50">
+                      {asset.assetId}
                     </td>
+
                     <td>
                       <div
                         className={`badge ${
@@ -140,31 +198,38 @@ const MyAssets = () => {
                         {asset.assetType}
                       </div>
                     </td>
+
                     <td className="text-sm">{asset.assignmentDate}</td>
+
                     <td className="text-center">
                       {asset.assetType === "returnable" ? (
                         <button
-                          onClick={() => handleInitiateReturn(asset.id)}
+                          onClick={() => handleInitiateReturn(asset)}
                           className={`btn btn-sm ${
                             isReturning
                               ? "btn-warning"
                               : "btn-outline btn-primary"
                           }`}
-                          disabled={isReturning}
+                          disabled={isReturning || submitting}
                         >
                           {isReturning ? (
                             <>
-                              <FaClock /> Return Pending
+                              <FaClock /> Pending HR Action
                             </>
                           ) : (
                             <>
-                              <FaUndo /> Initiate Return
+                              {submitting ? (
+                                <FaSync className="animate-spin" />
+                              ) : (
+                                <FaUndo />
+                              )}
+                              Initiate Return
                             </>
                           )}
                         </button>
                       ) : (
                         <div className="text-success flex items-center justify-center font-semibold">
-                          <FaCheckCircle className="mr-1" /> Permanent
+                          <FaCheckCircle className="mr-1" /> Permanent Asset
                         </div>
                       )}
                     </td>

@@ -1,12 +1,44 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { Link } from "react-router";
 import { FaBoxes, FaUserTag, FaClipboardList } from "react-icons/fa";
 import useAuth from "../useAuth";
+import useAxiosSecure from "../useAxiosSecure";
 
 // Placeholder data for Employee context
 
 const EPdash = () => {
-  let { user, users, assigneds, assets, requests } = useAuth();
+  let { user } = useAuth();
+
+  let axiosSecure = useAxiosSecure();
+
+  let [users, setUsers] = useState([]);
+  useEffect(() => {
+    axiosSecure(`/users`).then((data) => {
+      setUsers(data.data);
+    });
+  }, []);
+  let [assigneds, setAssigneds] = useState([]);
+  useEffect(() => {
+    axiosSecure(`/assigneds`).then((data) => {
+      setAssigneds(data.data);
+    });
+  }, []);
+  let [requests, setRequests] = useState([]);
+  useEffect(() => {
+    axiosSecure(`/requests`).then((data) => {
+      setRequests(data.data);
+    });
+  }, []);
+
+  const [asseti, setAssets] = useState([]);
+
+  useEffect(() => {
+    axiosSecure("http://localhost:3000/assets").then((data) =>
+      setAssets(data.data.result)
+    );
+  }, []);
+  let assets = asseti;
+
   let asset = assets.length;
   let myAssi = assigneds.filter((a) => a.epEmail === user.email);
   let myRequ = requests.filter(

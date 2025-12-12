@@ -7,6 +7,7 @@ import { toast } from "react-toastify";
 
 const Register = () => {
   let { registerUser, updateUserProfile } = useAuth();
+
   const navigate = useNavigate();
   let {
     register,

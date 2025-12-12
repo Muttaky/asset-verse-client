@@ -1,186 +1,194 @@
-import React, { useState } from "react";
-import { Link, useLoaderData } from "react-router";
+import React, { useEffect, useState, useCallback } from "react";
+import { Link } from "react-router";
 import {
   FaCheckCircle,
   FaTimesCircle,
   FaClock,
-  FaEye,
   FaFilter,
   FaSync,
   FaClipboardList,
+  FaExclamationTriangle,
 } from "react-icons/fa";
 import { toast } from "react-toastify";
 import useAuth from "../useAuth";
-// Placeholder Data for HR Manager's package status (MUST BE ENFORCED)
-// In a real application, this would be fetched from a global Auth/HR Context.
+import useAxiosSecure from "../useAxiosSecure";
 
-// Placeholder Data for Requests List (Simulating data fetched from a backend)
+const defaultHRProfile = {
+  packageLimit: 0,
+  companyName: "",
+};
 
 const Request = () => {
-  let { user, affiliations, users, requests } = useAuth();
-  let myAff = affiliations.filter((aff) => aff.hrEmail === user.email);
-  let currentUser = users.find((u) => u.email === user.email);
-  const allRequests = requests;
-  let initialRequests = allRequests.filter((r) => r.hrEmail === user.email);
+  const axiosSecure = useAxiosSecure();
+  const { user } = useAuth();
 
-  const [filterStatus, setFilterStatus] = useState("All");
-  const [requestss, setRequests] = useState(initialRequests);
+  const [allRequests, setAllRequests] = useState([]);
+  const [hrAffiliations, setHrAffiliations] = useState([]);
+  const [hrProfile, setHrProfile] = useState(defaultHRProfile);
+  const [loading, setLoading] = useState(true);
+  const [filterStatus, setFilterStatus] = useState("pending");
+  const [submitting, setSubmitting] = useState(false);
 
-  // Filter requests based on selected status
-  const filteredRequests = requestss.filter((request) => {
+  const currentEmployeeCount = hrAffiliations.length;
+  const packageLimit = hrProfile.packageLimit;
+  const isLimitReached =
+    packageLimit > 0 && currentEmployeeCount >= packageLimit;
+
+  const fetchHRData = useCallback(async () => {
+    if (!user?.email) {
+      setLoading(false);
+      return;
+    }
+
+    setLoading(true);
+    try {
+      const [usersRes, affiliationsRes, requestsRes] = await Promise.all([
+        axiosSecure.get(`/users`),
+        axiosSecure.get(`/affiliations`),
+        axiosSecure.get(`/requests`),
+      ]);
+
+      const allUsers = usersRes.data;
+      const allAffiliations = affiliationsRes.data;
+      const allReqs = requestsRes.data;
+
+      const currentUserProfile =
+        allUsers.find((u) => u.email === user.email) || defaultHRProfile;
+      const currentHRAffiliations = allAffiliations.filter(
+        (aff) => aff.hrEmail === user.email
+      );
+      const hrRequests = allReqs.filter((r) => r.hrEmail === user.email);
+
+      setHrProfile(currentUserProfile);
+      setHrAffiliations(currentHRAffiliations);
+      setAllRequests(hrRequests);
+    } catch (error) {
+      console.error("Error fetching HR dashboard data:", error);
+      toast.error("Failed to load dashboard data.");
+    } finally {
+      setLoading(false);
+    }
+  }, [user, axiosSecure]);
+
+  useEffect(() => {
+    fetchHRData();
+  }, [fetchHRData]);
+
+  const filteredRequests = allRequests.filter((request) => {
     if (filterStatus === "All") return true;
     return request.status === filterStatus;
   });
 
-  // --- Core HR Actions: Approval with Limit Enforcement & Auto-Affiliation ---
   const handleApprove = async (request) => {
-    let oldAff = myAff.find((aff) => aff.epEmail === request.epEmail);
+    if (isLimitReached) {
+      toast.error(
+        `Cannot approve. Employee limit (${packageLimit}) reached. Upgrade your package.`
+      );
+      return;
+    }
+    if (request.status !== "pending") {
+      toast.warn("This request has already been processed.");
+      return;
+    }
 
-    //DB start
+    setSubmitting(true);
     const today = new Date().toISOString().split("T")[0];
 
-    if (oldAff) {
-      console.log("already affiliated");
-    } else {
-      const newAffiliation = {
+    try {
+      const isAlreadyAffiliated = hrAffiliations.some(
+        (aff) => aff.epEmail === request.epEmail
+      );
+      if (!isAlreadyAffiliated) {
+        const newAffiliation = {
+          epName: request.epName,
+          epEmail: request.epEmail,
+          hrEmail: user.email,
+          hrPhoto: user.photoURL,
+          affiliationDate: today,
+          companyName: request.companyName,
+          status: "active",
+        };
+        await axiosSecure.post("/affiliations", newAffiliation);
+        setHrAffiliations([...hrAffiliations, newAffiliation]);
+        toast.info(`New employee ${request.epName} affiliated successfully.`);
+      }
+
+      const newAssigned = {
+        assetId: request.assetId,
+        assetName: request.assetName,
+        assetImage: request.assetImage,
+        assetType: request.assetType,
         epName: request.epName,
         epEmail: request.epEmail,
         hrEmail: user.email,
-        hrPhoto: user.photoURL,
-        affiliationDate: today,
+        assignmentDate: today,
         companyName: request.companyName,
-        status: "active",
+        status: "assigned",
       };
-      fetch("http://localhost:3000/affiliations", {
-        method: "POST",
-        headers: {
-          "content-type": "application/json",
-        },
-        body: JSON.stringify(newAffiliation),
-      })
-        .then((res) => res.json())
-        .then((data) => {
-          console.log("after post affiliation", data);
-          if (data.insertedId) {
-            toast("affiliation added successfully");
-          }
-        });
-    }
+      await axiosSecure.post("/assigneds", newAssigned);
 
-    const newAssigned = {
-      assetId: request.assetId,
-      assetName: request.assetName,
-      assetImage: request.assetImage,
-      assetType: request.assetType,
-      epName: request.epName,
-      epEmail: request.epEmail,
-      hrEmail: user.email,
-      assignmentDate: today,
-      companyName: request.companyName,
-      status: "assigned",
-    };
-    fetch("http://localhost:3000/assigneds", {
-      method: "POST",
-      headers: {
-        "content-type": "application/json",
-      },
-      body: JSON.stringify(newAssigned),
-    })
-      .then((res) => res.json())
-      .then((data) => {
-        console.log("after post assigned", data);
-        if (data.insertedId) {
-          toast("assigned added successfully");
-        }
-      });
+      const newRequestStatus = {
+        status: "approved",
+        approvalDate: today,
+      };
+      await axiosSecure.patch(`/requests/${request._id}`, newRequestStatus);
 
-    const newStatus = {
-      assetId: request.assetId,
-      assetName: request.assetName,
-      assetType: request.assetType,
-      requestDate: request.requestDate,
-      companyName: request.companyName,
-      epName: request.epName,
-      epEmail: request.epEmail,
-      hrEmail: request.hrEmail,
-      status: "approved",
-      approvalDate: request.approvalDate,
-    };
-
-    try {
-      let response = await fetch(
-        `http://localhost:3000/requests/${request._id}`,
-        {
-          method: "PATCH",
-          headers: {
-            "content-type": "application/json",
-          },
-          body: JSON.stringify(newStatus),
-        }
+      toast.success(
+        `Request for ${request.assetName} approved and asset assigned.`
       );
-      let data = await response.json();
-      if (data.modifiedCount) {
-        toast(`Request for ${request.assetName} approved.`);
-        window.location.reload();
-      }
+      await fetchHRData();
     } catch (error) {
-      toast.error("Failed to update.", error);
+      console.error("Approval error:", error);
+      toast.error(
+        "Approval failed due to a system error. Please check the network and API."
+      );
+    } finally {
+      setSubmitting(false);
     }
   };
 
   const handleReject = async (request) => {
+    if (request.status !== "pending") {
+      toast.warn("This request has already been processed.");
+      return;
+    }
+    setSubmitting(true);
+    const today = new Date().toISOString().split("T")[0];
+
     const newStatus = {
-      assetId: request.assetId,
-      assetName: request.assetName,
-      assetType: request.assetType,
-      requestDate: request.requestDate,
-      companyName: request.companyName,
-      epName: request.epName,
-      epEmail: request.epEmail,
-      hrEmail: request.hrEmail,
       status: "rejected",
-      approvalDate: request.approvalDate,
+      rejectionDate: today,
     };
 
     try {
-      let response = await fetch(
-        `http://localhost:3000/requests/${request._id}`,
-        {
-          method: "PATCH",
-          headers: {
-            "content-type": "application/json",
-          },
-          body: JSON.stringify(newStatus),
-        }
-      );
-      let data = await response.json();
-      if (data.modifiedCount) {
-        toast(`Request for ${request.assetName} rejected.`);
-        window.location.reload();
-      }
+      await axiosSecure.patch(`/requests/${request._id}`, newStatus);
+      toast.info(`Request for ${request.assetName} rejected.`);
+      await fetchHRData();
     } catch (error) {
-      toast.error("Failed to update.", error);
+      console.error("Rejection error:", error);
+      toast.error("Rejection failed.");
+    } finally {
+      setSubmitting(false);
     }
   };
 
-  // Helper function to get DaisyUI classes based on status
   const getStatusBadge = (status) => {
     switch (status) {
       case "pending":
         return (
-          <div className="badge badge-warning font-semibold flex items-center gap-1">
+          <div className="badge badge-warning font-semibold flex items-center gap-1 text-white">
             <FaClock /> Pending
           </div>
         );
       case "approved":
         return (
-          <div className="badge badge-success font-semibold flex items-center gap-1">
+          <div className="badge badge-success font-semibold flex items-center gap-1 text-white">
             <FaCheckCircle /> Approved
           </div>
         );
       case "rejected":
         return (
-          <div className="badge badge-error font-semibold flex items-center gap-1">
+          <div className="badge badge-error font-semibold flex items-center gap-1 text-white">
             <FaTimesCircle /> Rejected
           </div>
         );
@@ -188,6 +196,15 @@ const Request = () => {
         return null;
     }
   };
+
+  if (loading) {
+    return (
+      <div className="p-8 flex justify-center items-center min-h-[50vh]">
+        <FaSync className="animate-spin text-primary text-4xl mr-3" />
+        <p className="text-xl text-gray-600">Loading Requests and HR Data...</p>
+      </div>
+    );
+  }
 
   return (
     <div className="p-4 md:p-8 bg-base-100 rounded-xl shadow-lg">
@@ -198,12 +215,27 @@ const Request = () => {
         Review, approve, or reject employee requests for assets.
       </p>
 
-      {/* Control Panel: Filters */}
+      {isLimitReached && (
+        <div className="alert alert-error mb-6">
+          <FaExclamationTriangle className="w-6 h-6" />
+          <div className="text-white">
+            <h3 className="font-bold">Employee Limit Reached!</h3>
+            <p className="text-sm">
+              You have reached your package limit ({packageLimit} employees).
+              Please{" "}
+              <Link to="/pack" className="underline font-bold">
+                upgrade your subscription
+              </Link>{" "}
+              to approve new employee requests.
+            </p>
+          </div>
+        </div>
+      )}
+
       <div className="flex flex-col md:flex-row justify-between items-center mb-6 gap-4 bg-base-200 p-4 rounded-lg">
         <div className="flex items-center gap-2 font-semibold text-base-content">
           <FaFilter className="text-primary" /> Filter by Status:
         </div>
-
         <div className="tabs tabs-boxed">
           {["All", "pending", "approved", "rejected"].map((status) => (
             <a
@@ -215,38 +247,37 @@ const Request = () => {
                   : "hover:bg-primary/10"
               }`}
             >
-              {status}
+              {status.charAt(0).toUpperCase() + status.slice(1)}
             </a>
           ))}
         </div>
-
         <button
           className="btn btn-ghost btn-circle text-primary"
-          onClick={() => setRequests(initialRequests)}
-        ></button>
+          onClick={fetchHRData}
+          disabled={loading || submitting}
+          aria-label="Refresh Requests List"
+        >
+          <FaSync className={loading || submitting ? "animate-spin" : ""} />
+        </button>
       </div>
 
-      {/* Requests Table (Responsive) */}
       <div className="overflow-x-auto bg-base-100 rounded-lg border border-base-300">
         <table className="table table-zebra w-full">
-          {/* Table Header */}
           <thead className="bg-base-200 text-primary">
             <tr>
-              <th className="font-semibold text-base">Request ID</th>
-              <th className="font-semibold text-base">Asset Name</th>
-              <th className="font-semibold text-base">Employee</th>
-              <th className="font-semibold text-base">Status</th>
-              <th className="font-semibold text-base">Requested On</th>
-              <th className="font-semibold text-base">Actions</th>
+              <th>Request ID</th>
+              <th>Asset Name</th>
+              <th>Employee</th>
+              <th>Status</th>
+              <th>Requested On</th>
+              <th>Actions</th>
             </tr>
           </thead>
-
-          {/* Table Body */}
           <tbody>
             {filteredRequests.length > 0 ? (
               filteredRequests.map((request) => (
                 <tr
-                  key={request.id}
+                  key={request._id}
                   className="hover:bg-base-200/50 transition-colors duration-150"
                 >
                   <td className="font-mono text-xs text-gray-500">
@@ -261,48 +292,49 @@ const Request = () => {
                   </td>
                   <td>
                     {getStatusBadge(request.status)}
-                    {request.isFirstRequest && request.status === "pending" && (
-                      <div className="text-xs text-info mt-1 font-semibold">
-                        (First Request - Affiliation required)
-                      </div>
-                    )}
+                    {!hrAffiliations.some(
+                      (aff) => aff.epEmail === request.epEmail
+                    ) &&
+                      request.status === "pending" && (
+                        <div className="text-xs text-info mt-1 font-semibold">
+                          (New Employee - Affiliation required)
+                        </div>
+                      )}
                   </td>
                   <td className="text-sm">{request.requestDate}</td>
                   <td className="space-x-2">
                     {request.status === "pending" ? (
                       <>
-                        {/* Approve Button (Primary color) */}
-                        {currentUser.packageLimit <= myAff.length ? (
-                          <Link to="/pack">
-                            <button
-                              className="btn btn-sm btn-primary transition-transform hover:scale-105"
-                              aria-label="Approve Request"
-                            >
-                              Approve
-                            </button>
-                          </Link>
-                        ) : (
-                          <button
-                            onClick={() => handleApprove(request)}
-                            className="btn btn-sm btn-primary transition-transform hover:scale-105"
-                            aria-label="Approve Request"
-                          >
-                            Approve
-                          </button>
-                        )}
-
-                        {/* Reject Button (Secondary/Error color) */}
+                        <button
+                          onClick={() => handleApprove(request)}
+                          className="btn btn-sm btn-primary transition-transform hover:scale-105"
+                          aria-label="Approve Request"
+                          disabled={isLimitReached || submitting}
+                        >
+                          {submitting ? (
+                            <FaSync className="animate-spin" />
+                          ) : (
+                            <FaCheckCircle />
+                          )}{" "}
+                          Approve
+                        </button>
                         <button
                           onClick={() => handleReject(request)}
                           className="btn btn-sm btn-error btn-outline transition-transform hover:scale-105"
                           aria-label="Reject Request"
+                          disabled={submitting}
                         >
+                          {submitting ? (
+                            <FaSync className="animate-spin" />
+                          ) : (
+                            <FaTimesCircle />
+                          )}{" "}
                           Reject
                         </button>
                       </>
                     ) : (
                       <button className="btn btn-sm btn-ghost" disabled>
-                        <FaEye /> View Details
+                        <FaCheckCircle /> Action Complete
                       </button>
                     )}
                   </td>

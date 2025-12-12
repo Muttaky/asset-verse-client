@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { Link } from "react-router";
 import useAuth from "./useAuth";
 
@@ -11,6 +11,7 @@ import {
   FaWarehouse,
   FaHandshake,
 } from "react-icons/fa";
+import useAxiosSecure from "./useAxiosSecure";
 
 const benefitsData = [
   {
@@ -44,7 +45,15 @@ const benefitsData = [
 ];
 
 const Home = () => {
-  let { user, packages } = useAuth();
+  let { user } = useAuth();
+  let axiosSecure = useAxiosSecure();
+
+  let [packages, setPackages] = useState([]);
+  useEffect(() => {
+    axiosSecure(`/packages`).then((data) => {
+      setPackages(data.data);
+    });
+  }, []);
   const packagesData = packages;
 
   return (

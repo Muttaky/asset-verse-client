@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { Link } from "react-router";
 import {
   FaEdit,
@@ -8,16 +8,24 @@ import {
   FaFilter,
 } from "react-icons/fa";
 import useAuth from "../useAuth";
+import useAxiosSecure from "../useAxiosSecure";
 
 // Placeholder Data for Assets List (Simulating data fetched from a backend)
 
 const AssetsList = () => {
-  let { user, assets, loading } = useAuth();
-  if (loading || !user) {
-    return <p>Loading assets...</p>;
-  }
+  let { user } = useAuth();
+  let axiosSecure = useAxiosSecure();
 
-  let initialAssets = assets.filter((a) => a.email === user.email);
+  const [assets, setAssets] = useState([]);
+  useEffect(() => {
+    axiosSecure(`http://localhost:3000/assets?email=${user.email}`).then(
+      (data) => {
+        setAssets(data.data.result);
+      }
+    );
+  }, []);
+
+  let initialAssets = assets;
   const [searchTerm, setSearchTerm] = useState("");
 
   // Filter assets based on search term (case-insensitive)

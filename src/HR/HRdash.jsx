@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { FaBoxes, FaUsers } from "react-icons/fa";
 import useAuth from "../useAuth";
 import {
@@ -15,15 +15,50 @@ import {
   LabelList,
 } from "recharts";
 import { Link } from "react-router";
+import useAxiosSecure from "../useAxiosSecure";
 
 // Custom Colors for Charts (using DaisyUI theme placeholders)
 const PIE_COLORS = ["#0A676E", "#0D9488", "#1E40AF", "#9333EA", "#F59E0B"];
 const BAR_COLOR = "#0D9488"; // Secondary color
 
 const HRdash = () => {
-  let { user, affiliations, assets, users, requests, assigneds } = useAuth();
+  let { user } = useAuth();
+  let axiosSecure = useAxiosSecure();
+  let [users, setUsers] = useState([]);
+  useEffect(() => {
+    axiosSecure(`/users`).then((data) => {
+      setUsers(data.data);
+    });
+  }, []);
+  let [affiliations, setAffiliations] = useState([]);
+  useEffect(() => {
+    axiosSecure(`/affiliations`).then((data) => {
+      setAffiliations(data.data);
+    });
+  }, []);
+  let [assigneds, setAssigneds] = useState([]);
+  useEffect(() => {
+    axiosSecure(`/assigneds`).then((data) => {
+      setAssigneds(data.data);
+    });
+  }, []);
+  let [requests, setRequests] = useState([]);
+  useEffect(() => {
+    axiosSecure(`/requests`).then((data) => {
+      setRequests(data.data);
+    });
+  }, []);
+
   let hrInfo = users.find((u) => u.email === user.email);
   let myAff = affiliations.filter((a) => a.hrEmail === user.email);
+  const [asset, setAssets] = useState([]);
+
+  useEffect(() => {
+    axiosSecure("http://localhost:3000/assets").then((data) =>
+      setAssets(data.data.result)
+    );
+  }, []);
+  let assets = asset;
   let myAssets = assets.filter((a) => a.email === user.email);
   let myAssign = assigneds.filter((a) => a.hrEmail === user.email);
   let myReq = requests.filter(

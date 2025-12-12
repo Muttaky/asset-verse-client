@@ -1,12 +1,20 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import axios from "axios";
 import { useNavigate } from "react-router";
 import { toast } from "react-toastify";
 import useAuth from "../useAuth";
+import useAxiosSecure from "../useAxiosSecure";
 const AddAssets = () => {
-  let { user, users } = useAuth();
+  let { user } = useAuth();
 
+  let axiosSecure = useAxiosSecure();
+  let [users, setUsers] = useState([]);
+  useEffect(() => {
+    axiosSecure(`/users`).then((data) => {
+      setUsers(data.data);
+    });
+  }, []);
   let newUser = users.find((u) => u.email === user.email);
 
   const navigate = useNavigate();
@@ -39,20 +47,12 @@ const AddAssets = () => {
         companyName: newUser.companyName,
         email: user.email,
       };
-      fetch("http://localhost:3000/assets", {
-        method: "POST",
-        headers: {
-          "content-type": "application/json",
-        },
-        body: JSON.stringify(newAsset),
-      })
-        .then((res) => res.json())
-        .then((data) => {
-          console.log("after post asset", data);
-          if (data.insertedId) {
-            toast("asset added successfully");
-          }
-        });
+      axiosSecure.post("/assets", newAsset).then((data) => {
+        console.log("after post asset", data.data);
+        if (data.data.insertedId) {
+          toast("asset added successfully");
+        }
+      });
 
       navigate("/assets-list");
     });

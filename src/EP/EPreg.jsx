@@ -4,8 +4,10 @@ import useAuth from "../useAuth";
 import axios from "axios";
 import { useNavigate } from "react-router";
 import { toast } from "react-toastify";
+import useAxiosSecure from "../useAxiosSecure";
 
 const Register = () => {
+  let axiosSecure = useAxiosSecure();
   let { registerUser, updateUserProfile } = useAuth();
   const navigate = useNavigate();
   let {
@@ -26,20 +28,12 @@ const Register = () => {
       createdAt: today,
       updatedAt: today,
     };
-    fetch("http://localhost:3000/users", {
-      method: "POST",
-      headers: {
-        "content-type": "application/json",
-      },
-      body: JSON.stringify(newUser),
-    })
-      .then((res) => res.json())
-      .then((data) => {
-        console.log("after post user", data);
-        if (data.insertedId) {
-          toast("user added successfully");
-        }
-      });
+    axiosSecure.post("http://localhost:3000/users", newUser).then((data) => {
+      console.log("after post user", data);
+      if (data.insertedId) {
+        toast("user added successfully");
+      }
+    });
     registerUser(data.email, data.password)
       .then((result) => {
         console.log(result.user);

@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
   FaUsers,
   FaUserCircle,
@@ -8,11 +8,19 @@ import {
   FaBriefcase,
 } from "react-icons/fa";
 import useAuth from "../useAuth";
+import useAxiosSecure from "../useAxiosSecure";
 
 // Placeholder Data for Team Members (Affiliated employees in the same company)
 
 const MyTeam = () => {
-  let { user, affiliations } = useAuth();
+  let { user } = useAuth();
+  let axiosSecure = useAxiosSecure();
+  let [affiliations, setAffiliations] = useState([]);
+  useEffect(() => {
+    axiosSecure(`/affiliations`).then((data) => {
+      setAffiliations(data.data);
+    });
+  }, []);
   let myAff = affiliations.filter((u) => u.epEmail === user.email);
   const initialTeamMembers = myAff;
   const [searchTerm, setSearchTerm] = useState("");

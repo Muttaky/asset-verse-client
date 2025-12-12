@@ -1,91 +1,115 @@
-import React, { useState } from "react";
+import React, { useEffect, useState, useCallback } from "react";
 import { Link } from "react-router";
 import {
   FaUsers,
   FaSearch,
-  FaEye,
   FaTrash,
-  FaCheckCircle,
   FaMinusCircle,
   FaSync,
 } from "react-icons/fa";
 import useAuth from "../useAuth";
 import { toast } from "react-toastify";
-// Placeholder Data for Employee List (Simulating data affiliated after first asset approval)
+import useAxiosSecure from "../useAxiosSecure";
 
 const EPList = () => {
-  let { user, affiliations, assigneds } = useAuth();
-  const allEmployees = affiliations;
-  let initialEmployees = allEmployees.filter((e) => e.hrEmail === user.email);
-  let myAssi = assigneds.filter((s) => s.hrEmail === user.email);
+  const axiosSecure = useAxiosSecure();
+  const { user } = useAuth();
+  const [allEmployees, setAllEmployees] = useState([]);
+  const [assignedAssets, setAssignedAssets] = useState([]);
+  const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
-  const [employees, setEmployees] = useState(initialEmployees); // State for handling status changes
 
-  // Filter employees based on search term
-  const filteredEmployees = employees.filter(
+  const fetchEmployeeData = useCallback(async () => {
+    if (!user?.email) {
+      setLoading(false);
+      return;
+    }
+    setLoading(true);
+    try {
+      const [affiliationsRes, assignedsRes] = await Promise.all([
+        axiosSecure.get(`/affiliations`),
+        axiosSecure.get(`/assigneds`),
+      ]);
+      const affiliations = affiliationsRes.data;
+      const assigneds = assignedsRes.data;
+      const hrEmployees = affiliations.filter((e) => e.hrEmail === user.email);
+      setAllEmployees(hrEmployees);
+      setAssignedAssets(assigneds);
+    } catch (error) {
+      console.error("Error fetching employee list data:", error);
+      toast.error("Failed to load employee data.");
+    } finally {
+      setLoading(false);
+    }
+  }, [user, axiosSecure]);
+
+  useEffect(() => {
+    fetchEmployeeData();
+  }, [fetchEmployeeData]);
+
+  const filteredEmployees = allEmployees.filter(
     (employee) =>
       employee.epName.toLowerCase().includes(searchTerm.toLowerCase()) ||
       employee.epEmail.toLowerCase().includes(searchTerm.toLowerCase())
   );
+  const activeEmployeeCount = allEmployees.filter(
+    (e) => e.status === "active"
+  ).length;
 
-  // --- Core HR Action: Remove Employee ---
-  // Note: According to the requirements, removing an employee should automatically
-  // handle the return of all 'Returnable' assets and end the company affiliation.
-  const handleRemoveEmployee = async (ep) => {
-    try {
-      let response = await fetch(
-        `http://localhost:3000/affiliations/${ep._id}`,
-        {
-          method: "DELETE",
-        }
-      );
-      const data = await response.json();
-      if (data.deletedCount === 1) {
-        toast(
-          `${ep.epName} has been successfully removed and assets returned.`
-        );
-      } else {
-        toast.error("Deletion failed. Try again.");
-      }
-    } catch (error) {
-      toast.error("An error occurred during deletion.");
-      console.error(error);
+  const handleRemoveEmployee = async (employee) => {
+    if (
+      !window.confirm(
+        `Are you sure you want to remove ${employee.epName}? This will also remove all assigned assets.`
+      )
+    ) {
+      return;
     }
-
     try {
-      const response = await fetch(
-        `http://localhost:3000/assigneds?hrEmail=${user.email}&epEmail=${ep.epEmail}`,
-        {
-          method: "DELETE",
-        }
+      const affiliationResponse = await axiosSecure.delete(
+        `/affiliations/${employee._id}`
       );
-
-      const data = await response.json();
-
-      if (data.deletedCount > 0) {
-        toast(`${data.deletedCount} asset(s) removed for ${ep.epEmail}`);
-        window.location.reload();
+      if (affiliationResponse.data.deletedCount === 1) {
+        toast.success(`${employee.epName}'s affiliation removed.`);
+        const assignedResponse = await axiosSecure.delete(
+          `/assigneds?hrEmail=${user.email}&epEmail=${employee.epEmail}`
+        );
+        if (assignedResponse.data.deletedCount >= 0) {
+          toast.info(
+            `${assignedResponse.data.deletedCount} asset(s) unassigned and marked for return.`
+          );
+          setAllEmployees((prev) => prev.filter((e) => e._id !== employee._id));
+        } else {
+          toast.warn("No assigned assets to clean up.");
+        }
       } else {
-        toast.error("No assigned assets found for this employee.");
+        toast.error("Affiliation deletion failed. Try again.");
       }
     } catch (error) {
-      console.error(error);
-      toast.error("An error occurred.");
+      toast.error("An error occurred during employee removal.");
+      console.error("Removal Error:", error);
     }
   };
+
+  if (loading) {
+    return (
+      <div className="p-8 flex justify-center items-center min-h-[50vh]">
+        <FaSync className="animate-spin text-primary text-4xl mr-3" />
+        <p className="text-xl text-gray-600">Loading Employee List...</p>
+      </div>
+    );
+  }
 
   return (
     <div className="p-4 md:p-8 bg-base-100 rounded-xl shadow-lg">
       <h1 className="text-3xl font-bold text-secondary mb-2 flex items-center gap-3">
-        <FaUsers className="text-primary" /> Affiliated Employee List
+        <FaUsers className="text-primary" />
+        Affiliated Employee List
       </h1>
       <p className="text-gray-500 mb-6">
         View and manage all employees currently affiliated with your company.
       </p>
 
-      {/* Control Panel: Search and Stats */}
       <div className="flex flex-col md:flex-row justify-between items-center mb-6 gap-4">
-        {/* Search Input */}
         <div className="form-control w-full md:w-1/3">
           <label className="input input-bordered flex items-center gap-2 bg-base-200">
             <FaSearch className="h-4 w-4 opacity-70" />
@@ -98,8 +122,6 @@ const EPList = () => {
             />
           </label>
         </div>
-
-        {/* Quick Stats Card (Using Primary Color) */}
         <div className="stats shadow bg-primary text-primary-content w-full md:w-auto">
           <div className="stat">
             <div className="stat-figure text-primary-content">
@@ -108,17 +130,13 @@ const EPList = () => {
             <div className="stat-title text-primary-content opacity-70">
               Total Active Employees
             </div>
-            <div className="stat-value text-3xl">
-              {employees.filter((e) => e.status === "active").length}
-            </div>
+            <div className="stat-value text-3xl">{activeEmployeeCount}</div>
           </div>
         </div>
       </div>
 
-      {/* Employee Table (Responsive) */}
       <div className="overflow-x-auto bg-base-100 rounded-lg border border-base-300">
         <table className="table table-zebra w-full">
-          {/* Table Header */}
           <thead className="bg-base-200 text-primary">
             <tr>
               <th className="font-semibold text-base">Employee Name</th>
@@ -131,15 +149,15 @@ const EPList = () => {
               <th className="font-semibold text-base text-center">Actions</th>
             </tr>
           </thead>
-
-          {/* Table Body */}
           <tbody>
             {filteredEmployees.length > 0 ? (
               filteredEmployees.map((employee) => {
-                let aas = myAssi.filter((m) => employee.epEmail === m.epEmail);
+                const assetsCount = assignedAssets.filter(
+                  (asset) => employee.epEmail === asset.epEmail
+                ).length;
                 return (
                   <tr
-                    key={employee.id}
+                    key={employee._id}
                     className="hover:bg-base-200/50 transition-colors duration-150"
                   >
                     <td className="font-bold">{employee.epName}</td>
@@ -147,7 +165,7 @@ const EPList = () => {
                     <td className="text-center">
                       <div
                         className={`badge ${
-                          employee.status === "Active"
+                          employee.status === "active"
                             ? "badge-success"
                             : "badge-warning"
                         } text-white`}
@@ -156,13 +174,10 @@ const EPList = () => {
                       </div>
                     </td>
                     <td className="text-center text-secondary font-semibold">
-                      {aas.length}
+                      {assetsCount}
                     </td>
-                    <td>{employee.affiliationDate}</td>
+                    <td>{employee.affiliationDate || "N/A"}</td>
                     <td className="flex justify-center space-x-2">
-                      {/* View Assets Button (Placeholder for routing to detailed employee view) */}
-
-                      {/* Remove Employee Button (Error/Danger color) */}
                       <button
                         onClick={() => handleRemoveEmployee(employee)}
                         className="btn btn-sm btn-error btn-square transition-transform hover:scale-105"
@@ -180,7 +195,9 @@ const EPList = () => {
                   colSpan="6"
                   className="text-center py-8 text-lg text-gray-500"
                 >
-                  No employees found matching "{searchTerm}".
+                  {allEmployees.length === 0 && searchTerm === ""
+                    ? "You currently have no affiliated employees."
+                    : `No employees found matching "${searchTerm}".`}
                 </td>
               </tr>
             )}

@@ -1,9 +1,16 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { Link } from "react-router"; // Assuming useLoaderData and Link are from react-router-dom
 import useAuth from "../useAuth"; // Assuming your authentication hook
-
+import useAxiosSecure from "../useAxiosSecure";
 const Packages = () => {
-  const { user, packages } = useAuth(); // Get current HR user
+  let axiosSecure = useAxiosSecure();
+  const { user } = useAuth(); // Get current HR user
+  let [packages, setPackages] = useState([]);
+  useEffect(() => {
+    axiosSecure(`/packages`).then((data) => {
+      setPackages(data.data);
+    });
+  }, []);
   let packagesData = packages;
   const handleCheckout = (pkg) => {
     // Collect data needed for Stripe checkout
@@ -14,18 +21,12 @@ const Packages = () => {
       hrEmail: user.email, // Use the logged-in user's email
     };
 
-    fetch(`http://localhost:3000/create-checkout-session`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify(paymentInfo),
-    })
-      .then((res) => res.json())
+    axiosSecure
+      .post(`http://localhost:3000/create-checkout-session`, paymentInfo)
       .then((data) => {
-        if (data.url) {
+        if (data.data.url) {
           // Redirect to Stripe Checkout page
-          window.location.replace(data.url);
+          window.location.replace(data.data.url);
         }
       })
       .catch((error) => {

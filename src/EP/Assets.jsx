@@ -4,9 +4,11 @@ import { toast } from "react-toastify";
 import useAuth from "../useAuth";
 // Placeholder Data for All Company Assets (Simulating data fetched from the HR inventory)
 import { useNavigate } from "react-router";
+import useAxiosSecure from "../useAxiosSecure";
 
 const Assets = () => {
   let { user } = useAuth();
+  let axiosSecure = useAxiosSecure();
   const navigate = useNavigate();
 
   const [assets, setAssets] = useState([]);
@@ -15,16 +17,14 @@ const Assets = () => {
   const [currentPage, setCurrentPage] = useState(0);
   const limit = 6;
   useEffect(() => {
-    fetch(
+    axiosSecure(
       `http://localhost:3000/assets?limit=${limit}&skip=${currentPage * limit}`
-    )
-      .then((res) => res.json())
-      .then((data) => {
-        setAssets(data.result);
-        setCount(data.result.length);
-        const pages = Math.ceil(data.count / limit);
-        setPage(pages);
-      });
+    ).then((data) => {
+      setAssets(data.data.result);
+      setCount(data.data.result.length);
+      const pages = Math.ceil(data.data.count / limit);
+      setPage(pages);
+    });
   }, [currentPage]);
 
   const initialAssets = assets;
@@ -57,17 +57,11 @@ const Assets = () => {
       status: "pending",
       approvalDate: "N/A",
     };
-    fetch("http://localhost:3000/requests", {
-      method: "POST",
-      headers: {
-        "content-type": "application/json",
-      },
-      body: JSON.stringify(newRequest),
-    })
-      .then((res) => res.json())
+    axiosSecure
+      .post("http://localhost:3000/requests", newRequest)
       .then((data) => {
         console.log("after post asset", data);
-        if (data.insertedId) {
+        if (data.data.insertedId) {
           toast("asset added successfully");
         }
       });

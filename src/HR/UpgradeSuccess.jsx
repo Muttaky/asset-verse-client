@@ -1,7 +1,9 @@
 import React, { useEffect, useState } from "react";
 import { Link, useLocation } from "react-router";
+import useAxiosSecure from "../useAxiosSecure";
 
 const UpgradeSuccess = () => {
+  let axiosSecure = useAxiosSecure();
   const [message, setMessage] = useState(
     "Verifying payment and updating your account..."
   );
@@ -15,16 +17,12 @@ const UpgradeSuccess = () => {
 
     if (sessionId && hrEmail && employeeLimit) {
       // Send request to update the HR user's packageLimit
-      fetch(`http://localhost:3000/hr-limit/${hrEmail}`, {
-        method: "PATCH",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ employeeLimit: Number(employeeLimit) }),
-      })
-        .then((res) => res.json())
+      axiosSecure
+        .patch(`http://localhost:3000/hr-limit/${hrEmail}`, {
+          employeeLimit: Number(employeeLimit),
+        })
         .then((data) => {
-          if (data.acknowledged) {
+          if (data.data.acknowledged) {
             setMessage(
               `Success! Your account has been upgraded to ${employeeLimit} employee slots. You can now add more employees.`
             );

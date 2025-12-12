@@ -38,52 +38,6 @@ const AuthProvider = ({ children }) => {
     };
   }, []);
 
-  const [affiliations, setAffiliations] = useState([]);
-
-  useEffect(() => {
-    fetch("http://localhost:3000/affiliations")
-      .then((res) => res.json())
-      .then((data) => setAffiliations(data));
-  }, []);
-
-  const [asset, setAssets] = useState([]);
-
-  useEffect(() => {
-    fetch("http://localhost:3000/assets")
-      .then((res) => res.json())
-      .then((data) => setAssets(data));
-  }, []);
-  let assets = asset.result;
-
-  const [assigneds, setAssigneds] = useState([]);
-
-  useEffect(() => {
-    fetch("http://localhost:3000/assigneds")
-      .then((res) => res.json())
-      .then((data) => setAssigneds(data));
-  }, []);
-  const [packages, setPackages] = useState([]);
-
-  useEffect(() => {
-    fetch("http://localhost:3000/packages")
-      .then((res) => res.json())
-      .then((data) => setPackages(data));
-  }, []);
-  const [requests, setRequests] = useState([]);
-
-  useEffect(() => {
-    fetch("http://localhost:3000/requests")
-      .then((res) => res.json())
-      .then((data) => setRequests(data));
-  }, []);
-  const [users, setUsers] = useState([]);
-
-  useEffect(() => {
-    fetch("http://localhost:3000/users")
-      .then((res) => res.json())
-      .then((data) => setUsers(data));
-  }, []);
-
   let authInfo = {
     user,
     loading,
@@ -91,12 +45,6 @@ const AuthProvider = ({ children }) => {
     loginUser,
     logOut,
     updateUserProfile,
-    affiliations,
-    assets,
-    assigneds,
-    packages,
-    requests,
-    users,
   };
   return <AuthContext value={authInfo}>{children}</AuthContext>;
 };
