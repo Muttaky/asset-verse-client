@@ -18,9 +18,12 @@ const UpgradeSuccess = () => {
     if (sessionId && hrEmail && employeeLimit) {
       // Send request to update the HR user's packageLimit
       axiosSecure
-        .patch(`http://localhost:3000/hr-limit/${hrEmail}`, {
-          employeeLimit: Number(employeeLimit),
-        })
+        .patch(
+          `https://asset-verse-server-zeta.vercel.app/hr-limit/${hrEmail}`,
+          {
+            employeeLimit: Number(employeeLimit),
+          }
+        )
         .then((data) => {
           if (data.data.acknowledged) {
             setMessage(

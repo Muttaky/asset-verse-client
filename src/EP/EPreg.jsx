@@ -28,12 +28,14 @@ const Register = () => {
       createdAt: today,
       updatedAt: today,
     };
-    axiosSecure.post("http://localhost:3000/users", newUser).then((data) => {
-      console.log("after post user", data);
-      if (data.insertedId) {
-        toast("user added successfully");
-      }
-    });
+    axiosSecure
+      .post("https://asset-verse-server-zeta.vercel.app/users", newUser)
+      .then((data) => {
+        console.log("after post user", data);
+        if (data.insertedId) {
+          toast("user added successfully");
+        }
+      });
     registerUser(data.email, data.password)
       .then((result) => {
         console.log(result.user);

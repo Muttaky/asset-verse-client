@@ -22,7 +22,10 @@ const Packages = () => {
     };
 
     axiosSecure
-      .post(`http://localhost:3000/create-checkout-session`, paymentInfo)
+      .post(
+        `https://asset-verse-server-zeta.vercel.app/create-checkout-session`,
+        paymentInfo
+      )
       .then((data) => {
         if (data.data.url) {
           // Redirect to Stripe Checkout page

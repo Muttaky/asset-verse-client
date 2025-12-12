@@ -18,7 +18,9 @@ const Assets = () => {
   const limit = 6;
   useEffect(() => {
     axiosSecure(
-      `http://localhost:3000/assets?limit=${limit}&skip=${currentPage * limit}`
+      `https://asset-verse-server-zeta.vercel.app/assets?limit=${limit}&skip=${
+        currentPage * limit
+      }`
     ).then((data) => {
       setAssets(data.data.result);
       setCount(data.data.result.length);
@@ -58,7 +60,7 @@ const Assets = () => {
       approvalDate: "N/A",
     };
     axiosSecure
-      .post("http://localhost:3000/requests", newRequest)
+      .post("https://asset-verse-server-zeta.vercel.app/requests", newRequest)
       .then((data) => {
         console.log("after post asset", data);
         if (data.data.insertedId) {

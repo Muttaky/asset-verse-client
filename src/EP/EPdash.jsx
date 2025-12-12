@@ -33,8 +33,8 @@ const EPdash = () => {
   const [asseti, setAssets] = useState([]);
 
   useEffect(() => {
-    axiosSecure("http://localhost:3000/assets").then((data) =>
-      setAssets(data.data.result)
+    axiosSecure("https://asset-verse-server-zeta.vercel.app/assets").then(
+      (data) => setAssets(data.data.result)
     );
   }, []);
   let assets = asseti;

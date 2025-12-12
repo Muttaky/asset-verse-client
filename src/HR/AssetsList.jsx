@@ -18,11 +18,11 @@ const AssetsList = () => {
 
   const [assets, setAssets] = useState([]);
   useEffect(() => {
-    axiosSecure(`http://localhost:3000/assets?email=${user.email}`).then(
-      (data) => {
-        setAssets(data.data.result);
-      }
-    );
+    axiosSecure(
+      `https://asset-verse-server-zeta.vercel.app/assets?email=${user.email}`
+    ).then((data) => {
+      setAssets(data.data.result);
+    });
   }, []);
 
   let initialAssets = assets;
